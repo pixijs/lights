@@ -1,0 +1,68 @@
+{
+  "name": "pixi-lights",
+  "version": "1.0.0",
+  "description": "A plugin that adds deferred lighting to Pixi.js",
+  "license": "MIT",
+  "main": "./src/index.js",
+  "author": "Chad Engler <chad@pantherdev.com>",
+  "homepage": "https://github.com/pixijs/pixi-lights",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pixijs/pixi-lights.git"
+  },
+  "bugs": {
+    "url": "https://github.com/pixijs/pixi-lights/issues"
+  },
+  "scripts": {
+    "test": "gulp test",
+    "build": "gulp build",
+    "docs": "./node_modules/.bin/jsdoc -c ./gulp/util/jsdoc.conf.json"
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "keywords": [
+    "2d",
+    "pixi"
+  ],
+  "peerDependencies": {
+    "pixi.js": "^3.0.2"
+  },
+  "dependencies": {
+    "brfs": "^1.4.0",
+    "glslify": "^2.1.2",
+    "glslify-import": "^1.0.0"
+  },
+  "devDependencies": {
+    "browserify": "^9.0.3",
+    "del": "^1.1.0",
+    "gulp": "^3.8.10",
+    "gulp-cached": "^1.0.2",
+    "gulp-jshint": "^1.9.0",
+    "gulp-mirror": "^0.4.0",
+    "gulp-plumber": "^0.6.6",
+    "gulp-rename": "^1.2.0",
+    "gulp-sourcemaps": "^1.5.2",
+    "gulp-uglify": "^1.0.2",
+    "gulp-util": "^3.0.1",
+    "jaguarjs-jsdoc": "git+https://github.com/davidshimjs/jaguarjs-jsdoc.git",
+    "jsdoc": "^3.3.0",
+    "jshint-summary": "^0.4.0",
+    "require-dir": "^0.1.0",
+    "run-sequence": "^1.0.2",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.0.0",
+    "watchify": "^2.2.1"
+  },
+  "browserify": {
+    "transform": [
+      "brfs",
+      "glslify"
+    ]
+  },
+  "glslify": {
+    "transform": [
+      "glslify-import"
+    ]
+  }
+}

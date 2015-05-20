@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui" />
+
+        <title>Pixi Lighting</title>
+    </head>
+
+    <body>
+        <script src="src/pixi.js"></script>
+        <script src="bin/pixi-lights.js"></script>
+        <script>
+            var renderer = new PIXI.lighting.WebGLDeferredRenderer(1024, 512),
+//            var renderer = new PIXI.WebGLRenderer(1024, 512),
+                stage = new PIXI.Container();
+
+            document.body.appendChild(renderer.view);
+
+            PIXI.loader
+                .add('diffuse', 'test/BGTextureTest.jpg')
+                .add('normal', 'test/BGTextureNORM.jpg')
+                .load(function (loader, res) {
+                    var sprite = new PIXI.Sprite(res.diffuse.texture);
+
+                    sprite.normalTexture = res.normal.texture;
+
+                    stage.addChild(sprite);
+
+                    animate();
+                });
+
+            function animate() {
+                requestAnimationFrame(animate);
+                renderer.render(stage);
+            }
+        </script>
+    </body>
+</html>
