@@ -87,14 +87,14 @@ Object.assign(WebGLDeferredRenderer.prototype, {
      */
     _initContext: function ()
     {
-        // first create our render targets.
-        this.diffuseRenderTarget = new PIXI.RenderTarget(this.gl, this.width, this.height, null, this.resolution, false);
-        this.normalsRenderTarget = new PIXI.RenderTarget(this.gl, this.width, this.height, null, this.resolution, false);
-
         // call parent init
         PIXI.WebGLRenderer.prototype._initContext.call(this);
 
-        this.outputRenderTarget = this.renderTarget;
+        // first create our render targets.
+        this.diffuseTexture = new PIXI.RenderTexture(this, this.width, this.height, null, this.resolution);
+        this.normalsTexture = new PIXI.RenderTexture(this, this.width, this.height, null, this.resolution);
+
+//        this.outputRenderTarget = this.renderTarget;
 
         // render targets bind when they get created, so we need to reset back to the default one.
         this.renderTarget.activate();
@@ -104,16 +104,19 @@ Object.assign(WebGLDeferredRenderer.prototype, {
     {
         // render diffuse
         this.renderingNormals = false;
-        this.renderTarget = this.diffuseRenderTarget;
-        this._doWebGLRender(object);
+        this.diffuseTexture.render(object);
+//        this.renderTarget = this.diffuseRenderTarget;
+//        this._doWebGLRender(object);
 
         // render normals
         this.renderingNormals = true;
-        this.renderTarget = this.normalsRenderTarget;
-        this._doWebGLRender(object);
+        this.normalsTexture.render(object);
+//        this.renderTarget = this.normalsRenderTarget;
+//        this._doWebGLRender(object);
 
         // render lights
-        this.setRenderTarget(this.outputRenderTarget);
+        this.setRenderTarget(this.renderTarget);
+        this.setObjectRenderer(this.plugins.lights);
         this.plugins.lights.flush();
 
         // composite to viewport

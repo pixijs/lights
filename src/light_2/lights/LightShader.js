@@ -12,8 +12,8 @@ function LightShader(shaderManager, vertexSrc, fragmentSrc, customUniforms, cust
                                                                      0, 1, 0,
                                                                      0, 0, 1]) },
         // textures from the previously rendered FBOs
-        uSampler:       { type: 'sampler2D', value: shaderManager.renderer.normalsRenderTarget },
-        uNormalSampler: { type: 'sampler2D', value: shaderManager.renderer.diffuseRenderTarget },
+        uSampler:       { type: 'sampler2D', value: null },
+        uNormalSampler: { type: 'sampler2D', value: null },
 
         // size of the renderer viewport
         uViewSize:      { type: '2f', value: [0, 0] },

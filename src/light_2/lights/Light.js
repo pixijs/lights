@@ -58,7 +58,9 @@ Light.prototype.renderWebGL = function (renderer)
     // I actually don't want to interrupt the current batch, so don't set light as the current object renderer.
     // light renderer works a bit differently in that ALL lights are in a single batch no matter what.
 
-    // renderer.setObjectRenderer(renderer.plugins.light);
+    // renderer.setObjectRenderer(renderer.plugins.lights);
 
-    renderer.plugins.lights.render(this);
+    if (renderer.renderingNormals) {
+        renderer.plugins.lights.render(this);
+    }
 };

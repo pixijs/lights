@@ -213,15 +213,15 @@ LightRenderer.prototype.flush = function ()
     var shader;
 
     // upload the verts to the buffer
-    if (this.currentBatchSize > (this.size * 0.5))
-    {
+//    if (this.currentBatchSize > (this.size * 0.5))
+//    {
         gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.vertices);
-    }
-    else
-    {
-        var view = this.positions.subarray(0, this.currentBatchSize * this.vertByteSize);
-        gl.bufferSubData(gl.ARRAY_BUFFER, 0, view);
-    }
+//    }
+//    else
+//    {
+//        var view = this.positions.subarray(0, this.currentBatchSize * this.vertByteSize);
+//        gl.bufferSubData(gl.ARRAY_BUFFER, 0, view);
+//    }
 
     var nextShader;
     var batchSize = 0;
@@ -252,6 +252,9 @@ LightRenderer.prototype.flush = function ()
 
             // set some uniform values
             shader.uniforms.projectionMatrix.value = this.renderer.currentRenderTarget.projectionMatrix.toArray(true);
+            
+            shader.uniforms.uSampler.value = this.renderer.diffuseTexture;
+            shader.uniforms.uNormalSampler.value = this.renderer.normalTexture;
 
             shader.uniforms.uViewSize.value[0] = this.renderer.width;
             shader.uniforms.uViewSize.value[1] = this.renderer.height;
@@ -299,8 +302,14 @@ LightRenderer.prototype.start = function () {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
 
-    // set the vertex attribute
-    gl.vertexAttribPointer(this.shader.attributes.aVertexPosition, 2, gl.FLOAT, false, this.vertByteSize, 0);
+    // set the vertex attributes
+    var shader = this.renderer.shaderManager.plugins.pointLightShader,
+        stride = this.vertByteSize;
+
+    gl.vertexAttribPointer(shader.attributes.aVertexPosition, 2, gl.FLOAT, false, stride, 0);
+    gl.vertexAttribPointer(shader.attributes.aLightColor, 4, gl.UNSIGNED_BYTE, true, stride, 2 * 4);
+    gl.vertexAttribPointer(shader.attributes.aLightPosition, 3, gl.FLOAT, false, stride, 6 * 4);
+    gl.vertexAttribPointer(shader.attributes.aLightFalloff, 3, gl.FLOAT, false, stride, 9 * 4);
 };
 
 /**

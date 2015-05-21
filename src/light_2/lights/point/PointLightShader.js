@@ -13,14 +13,14 @@ function PointLightShader(shaderManager) {
         // vertex shader
         glslify(__dirname + '/point.vert'),
         // fragment shader
-        glslify(__dirname + '/point.frag'),
+        glslify(__dirname + '/point2.frag'),
         // custom uniforms
         null,
         // custom attributes
         {
-            aLightColor: 0,
-            aLightPosition: 0,
-            aLightFalloff: 0
+            aLightColor: 1,
+            aLightPosition: 2,
+            aLightFalloff: 3
         }
     );
 }
