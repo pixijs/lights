@@ -1,5 +1,13 @@
-var Light = require('../Light'),
-    DirectionalLightShader = require('./DirectionalLightShader');
+/**
+ * Don't look at this, it isn't done yet!
+ */
+
+
+
+
+
+
+var Light = require('../Light');
 
 /**
  * @class
@@ -14,7 +22,7 @@ function DirectionalLight(color, intensity, target) {
 
     this.intensity = intensity !== undefined ? intensity : 1;
 
-    this.shader = 'directionalLightShader';
+    this.shaderName = 'directionalLightShader';
 }
 
 DirectionalLight.prototype = Object.create(Light.prototype);

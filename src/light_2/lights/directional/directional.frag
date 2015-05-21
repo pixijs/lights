@@ -1,13 +1,8 @@
 precision lowp float;
 
-varying vec2 vTextureCoord;
+// imports the common uniforms like samplers, and ambient color
+#pragma glslify: import("../shared/commonUniforms.glsl")
 
-uniform sampler2D uSampler;
-uniform sampler2D uNormalSampler;
-
-uniform vec2 uViewSize;
-
-uniform vec4 uAmbientColor;     // ambient color, alpha channel used for intensity.
 uniform vec4 uLightColor;       // light color, alpha channel used for intensity.
 uniform vec3 uLightDirection;   // light direction
 uniform vec3 uLightFalloff;     // light falloff attenuation coefficients

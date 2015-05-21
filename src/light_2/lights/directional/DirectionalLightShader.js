@@ -1,3 +1,12 @@
+/**
+ * Don't look at this, it isn't done yet!
+ */
+
+
+
+
+
+
 var glslify = require('glslify');
 
 /**
@@ -12,21 +21,27 @@ function DirectionalLightShader(shaderManager) {
         // vertex shader
         glslify(__dirname + '/directional.vert'),
         // fragment shader
-        glslify(__dirname + '/directional.fag'),
+        glslify(__dirname + '/directional.frag'),
         // custom uniforms
         {
-            samplerNormalDepth: { type: "sampler2D", value: null },
-            samplerColor: 		{ type: "sampler2D", value: null },
-            matProjInverse:     { type: "m4", value: new Float32Array([ 1, 0, 0, 0,
-                                                                        0, 1, 0, 0,
-                                                                        0, 0, 1, 0,
-                                                                        0, 0, 0, 1 ]) },
-            viewWidth:          { type: "1f", value: 800 },
-            viewHeight:         { type: "1f", value: 600 },
+            // textures from the previously rendered FBOs
+            uSampler:       { type: 'sampler2D', value: shaderManager.renderer.normalsRenderTarget },
+            uNormalSampler: { type: 'sampler2D', value: shaderManager.renderer.diffuseRenderTarget },
 
-            lightDirection:     { type: "v2", value: new PIXI.Point(0, 1) },
-            lightColor:         { type: "c", value: [0, 0, 0] },
-            lightIntensity:     { type: "1f", value: 1.0 }
+            // size of the renderer viewport
+            uViewSize:      { type: '2f', value: [0, 0] },
+
+            // ambient lighting color, alpha channel used for intensity
+            uAmbientColor:  { type: '4f', value: [0, 0, 0, 0] },
+
+            // light color, alpha channel used for intensity.
+            uLightColor:    { type: '4f', value: [0, 0, 0, 0] },
+
+            // light direction, z is the height above the viewport
+            uLightDirection:{ type: '3f', value: [0, 0, 0] },
+
+            // light falloff attenuation coefficients
+            uLightFalloff:  { type: '3f', value: [0, 0, 0] }
         },
         // custom attributes
         {

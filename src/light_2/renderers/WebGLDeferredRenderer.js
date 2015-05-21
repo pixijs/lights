@@ -23,25 +23,62 @@
  */
 function WebGLDeferredRenderer(width, height, options)
 {
-    PIXI.WebGLRenderer.call(this, width, height, options);
- 
-    this.viewportRenderTarget = this.renderTarget;
+    options = options || {};
 
-    this.diffuseRenderTarget = null;
-    this.normalsRenderTarget = null;
-    this.lightsRenderTarget = null;
+    this._lightAmbientColor = 0x000000;
+    this._lightAmbientColorRgba = [0, 0, 0, 0];
+
+    this.ambientColor = options.ambientColor || this._lightAmbientColor;
+    this.ambientIntensity = options.ambientIntensity || this._lightAmbientColorRgba[3];
 
     this.lights = [];
 
     this.renderingNormals = false;
 
     this._doWebGLRender = PIXI.WebGLRenderer.prototype.render;
+
+    PIXI.WebGLRenderer.call(this, width, height, options);
 }
 
 WebGLDeferredRenderer.prototype = Object.create(PIXI.WebGLRenderer.prototype);
 WebGLDeferredRenderer.prototype.constructor = WebGLDeferredRenderer;
-
 module.exports = WebGLDeferredRenderer;
+
+Object.defineProperties(WebGLDeferredRenderer.prototype, {
+    /**
+     * The color of ambient lighting
+     *
+     * @member {number}
+     * @memberof WebGLDeferredRenderer#
+     */
+    ambientColor: {
+        get: function ()
+        {
+            return this._lightAmbientColor;
+        },
+        set: function (val)
+        {
+            this._lightAmbientColor = val;
+            PIXI.utils.hex2rgb(val, this._lightAmbientColorRgba);
+        }
+    },
+    /**
+     * The intensity of ambient lighting
+     *
+     * @member {number}
+     * @memberof WebGLDeferredRenderer#
+     */
+    ambientIntensity: {
+        get: function ()
+        {
+            return this._lightAmbientColorRgba[3];
+        },
+        set: function (val)
+        {
+            this._lightAmbientColorRgba[3] = val;
+        }
+    }
+});
 
 /** @lends PIXI.DisplayObject# */
 Object.assign(WebGLDeferredRenderer.prototype, {
@@ -50,11 +87,14 @@ Object.assign(WebGLDeferredRenderer.prototype, {
      */
     _initContext: function ()
     {
-        PIXI.WebGLRenderer.prototype._initContext.call(this);
-
+        // first create our render targets.
         this.diffuseRenderTarget = new PIXI.RenderTarget(this.gl, this.width, this.height, null, this.resolution, false);
         this.normalsRenderTarget = new PIXI.RenderTarget(this.gl, this.width, this.height, null, this.resolution, false);
-        this.lightsRenderTarget  = new PIXI.RenderTarget(this.gl, this.width, this.height, null, this.resolution, false);
+
+        // call parent init
+        PIXI.WebGLRenderer.prototype._initContext.call(this);
+
+        this.outputRenderTarget = this.renderTarget;
 
         // render targets bind when they get created, so we need to reset back to the default one.
         this.renderTarget.activate();
@@ -73,6 +113,7 @@ Object.assign(WebGLDeferredRenderer.prototype, {
         this._doWebGLRender(object);
 
         // render lights
+        this.setRenderTarget(this.outputRenderTarget);
         this.plugins.lights.flush();
 
         // composite to viewport

@@ -13,9 +13,10 @@
         <script src="src/pixi.js"></script>
         <script src="bin/pixi-lights.js"></script>
         <script>
-            var renderer = new PIXI.lighting.WebGLDeferredRenderer(1024, 512),
+            var renderer = new PIXI.lights.WebGLDeferredRenderer(1024, 512),
 //            var renderer = new PIXI.WebGLRenderer(1024, 512),
-                stage = new PIXI.Container();
+                stage = new PIXI.Container(),
+                light = new PIXI.lights.PointLight();
 
             document.body.appendChild(renderer.view);
 
@@ -28,6 +29,7 @@
                     sprite.normalTexture = res.normal.texture;
 
                     stage.addChild(sprite);
+                    stage.addChild(light);
 
                     animate();
                 });

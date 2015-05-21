@@ -13,6 +13,13 @@ core.loaders        = require('./loaders');
 core.mesh           = require('./mesh');
 
 // export a premade loader instance
+/**
+ * A premade instance of the loader that can be used to loader resources.
+ *
+ * @name loader
+ * @memberof PIXI
+ * @property {PIXI.loaders.Loader}
+ */
 core.loader = new core.loaders.Loader();
 
 // mixin the deprecation features.
@@ -6311,7 +6318,7 @@ module.exports = function () {
 },{"../../Resource":16,"../../b64":17}],21:[function(require,module,exports){
 module.exports={
   "name": "pixi.js",
-  "version": "3.0.5",
+  "version": "3.0.6",
   "description": "Pixi.js is a fast lightweight 2D library that works across all devices.",
   "author": "Mat Groves",
   "contributors": [
@@ -6353,7 +6360,7 @@ module.exports={
     "gulp-sourcemaps": "^1.5.2",
     "gulp-uglify": "^1.2.0",
     "gulp-util": "^3.0.4",
-    "ink-docstrap": "git+https://github.com/Pilatch/docstrap.git",
+    "jaguarjs-jsdoc": "git+https://github.com/davidshimjs/jaguarjs-jsdoc.git",
     "jsdoc": "^3.3.0-beta3",
     "jshint-summary": "^0.4.0",
     "minimist": "^1.1.1",
@@ -6375,8 +6382,8 @@ module.exports={
 },{}],22:[function(require,module,exports){
 /**
  * Constant values used in pixi
- * @class
- * @memberof PIXI
+ *
+ * @lends PIXI
  */
 var CONST = {
     /**
@@ -6868,7 +6875,7 @@ Container.prototype.generateTexture = function (renderer, resolution, scaleMode)
 {
     var bounds = this.getLocalBounds();
 
-    var renderTexture = new RenderTexture(renderer, bounds.width | 0, bounds.height | 0, renderer, scaleMode, resolution);
+    var renderTexture = new RenderTexture(renderer, bounds.width | 0, bounds.height | 0, scaleMode, resolution);
 
     _tempMatrix.tx = -bounds.x;
     _tempMatrix.ty = -bounds.y;
@@ -7366,7 +7373,6 @@ Object.defineProperties(DisplayObject.prototype, {
      * To remove a mask, set this property to null.
      *
      * @member {Graphics}
-     * @property {Graphics}
      * @memberof PIXI.DisplayObject#
      */
     mask: {
@@ -7609,7 +7615,6 @@ DisplayObject.prototype.destroy = function ()
 
 },{"../const":22,"../math":32,"../textures/RenderTexture":70,"eventemitter3":11}],25:[function(require,module,exports){
 var Container = require('../display/Container'),
-    Sprite = require('../sprites/Sprite'),
     Texture = require('../textures/Texture'),
     CanvasBuffer = require('../renderers/canvas/utils/CanvasBuffer'),
     CanvasGraphics = require('../renderers/canvas/utils/CanvasGraphics'),
@@ -8390,6 +8395,9 @@ Graphics.prototype._renderCanvas = function (renderer)
         this._prevTint = this.tint;
     }
 
+    // this code may still be needed so leaving for now..
+    //
+    /*
     if (this._cacheAsBitmap)
     {
         if (this.dirty || this.cachedSpriteDirty)
@@ -8409,29 +8417,27 @@ Graphics.prototype._renderCanvas = function (renderer)
 
         return;
     }
-    else
+    */
+    var context = renderer.context;
+    var transform = this.worldTransform;
+
+    if (this.blendMode !== renderer.currentBlendMode)
     {
-        var context = renderer.context;
-        var transform = this.worldTransform;
-
-        if (this.blendMode !== renderer.currentBlendMode)
-        {
-            renderer.currentBlendMode = this.blendMode;
-            context.globalCompositeOperation = renderer.blendModes[renderer.currentBlendMode];
-        }
-
-        var resolution = renderer.resolution;
-        context.setTransform(
-            transform.a * resolution,
-            transform.b * resolution,
-            transform.c * resolution,
-            transform.d * resolution,
-            transform.tx * resolution,
-            transform.ty * resolution
-        );
-
-        CanvasGraphics.renderGraphics(this, context);
+        renderer.currentBlendMode = this.blendMode;
+        context.globalCompositeOperation = renderer.blendModes[renderer.currentBlendMode];
     }
+
+    var resolution = renderer.resolution;
+    context.setTransform(
+        transform.a * resolution,
+        transform.b * resolution,
+        transform.c * resolution,
+        transform.d * resolution,
+        transform.tx * resolution,
+        transform.ty * resolution
+    );
+
+    CanvasGraphics.renderGraphics(this, context);
 };
 
 /**
@@ -8789,7 +8795,7 @@ Graphics.prototype.destroy = function () {
     this._localBounds = null;
 };
 
-},{"../const":22,"../display/Container":23,"../math":32,"../renderers/canvas/utils/CanvasBuffer":44,"../renderers/canvas/utils/CanvasGraphics":45,"../sprites/Sprite":66,"../textures/Texture":71,"./GraphicsData":26}],26:[function(require,module,exports){
+},{"../const":22,"../display/Container":23,"../math":32,"../renderers/canvas/utils/CanvasBuffer":44,"../renderers/canvas/utils/CanvasGraphics":45,"../textures/Texture":71,"./GraphicsData":26}],26:[function(require,module,exports){
 /**
  * A GraphicsData object.
  *
@@ -9881,13 +9887,14 @@ WebGLGraphicsData.prototype.upload = function () {
 };
 
 WebGLGraphicsData.prototype.destroy = function () {
-    this.gl = null;
     this.color = null;
     this.points = null;
     this.indices = null;
 
     this.gl.deleteBuffer(this.buffer);
     this.gl.deleteBuffer(this.indexBuffer);
+    
+    this.gl = null;
 
     this.buffer = null;
     this.indexBuffer = null;
@@ -15758,7 +15765,7 @@ Shader.prototype.syncUniform = function (uniform)
         case 't':
         case 'sampler2D':
 
-            if (!uniform.value || !uniform.value.baseTexture.hasLoaded)
+            if (!uniform.value || (uniform.value.baseTexture && !uniform.value.baseTexture.hasLoaded))
             {
                 break;
             }
@@ -15766,14 +15773,29 @@ Shader.prototype.syncUniform = function (uniform)
             // activate this texture
             gl.activeTexture(gl['TEXTURE' + this.textureCount]);
 
-            var texture = uniform.value.baseTexture._glTextures[gl.id];
+            var texture;
 
-            if (!texture)
+            // normal PIXI.Texture
+            if (uniform.value.baseTexture)
             {
-                this.initSampler2D(uniform);
-
-                // set the textur to the newly created one..
                 texture = uniform.value.baseTexture._glTextures[gl.id];
+
+                if (!texture)
+                {
+                    this.initSampler2D(uniform);
+
+                    // set the textur to the newly created one..
+                    texture = uniform.value.baseTexture._glTextures[gl.id];
+                }
+            }
+            // WebGL RenderTarget
+            else if (uniform.value.frameBuffer)
+            {
+                texture = uniform.value.texture;
+
+                if (!texture) {
+                    throw new Error('Connot bind a root RenderTarget to a shader!');
+                }
             }
 
             // bind the texture
@@ -15908,9 +15930,9 @@ function TextureShader(shaderManager, vertexSrc, fragmentSrc, customUniforms, cu
     var uniforms = {
 
         uSampler:           { type: 'sampler2D', value: 0 },
-        projectionMatrix:   { type: 'mat3', value: new Float32Array(1, 0, 0,
-                                                                    0, 1, 0,
-                                                                    0, 0, 1) }
+        projectionMatrix:   { type: 'mat3', value: new Float32Array([1, 0, 0,
+                                                                     0, 1, 0,
+                                                                     0, 0, 1]) }
     };
 
     if (customUniforms)
@@ -17123,14 +17145,15 @@ function SpriteRenderer(renderer)
     ObjectRenderer.call(this, renderer);
 
     /**
-     *
+     * Number of values sent in the vertex buffer.
+     * positionX, positionY, colorR, colorG, colorB = 5
      *
      * @member {number}
      */
     this.vertSize = 5;
 
     /**
-     *
+     * The size of the vertex information in bytes.
      *
      * @member {number}
      */
@@ -17144,45 +17167,40 @@ function SpriteRenderer(renderer)
     this.size = CONST.SPRITE_BATCH_SIZE; // 2000 is a nice balance between mobile / desktop
 
     // the total number of bytes in our batch
-    var numVerts = this.size * 4 * this.vertByteSize;
-    // the total number of indices in our batch
+    var numVerts = (this.size * 4) * this.vertByteSize;
+
+    // the total number of indices in our batch, there are 6 points per quad.
     var numIndices = this.size * 6;
 
     /**
-     * Holds the vertices
+     * Holds the vertex data that will be sent to the vertex shader.
      *
      * @member {ArrayBuffer}
      */
     this.vertices = new ArrayBuffer(numVerts);
 
     /**
-     * View on the vertices as a Float32Array
+     * View on the vertices as a Float32Array for positions
      *
      * @member {Float32Array}
      */
     this.positions = new Float32Array(this.vertices);
 
     /**
-     * Holds the color components
+     * View on the vertices as a Uint32Array for colors
      *
      * @member {Uint32Array}
      */
     this.colors = new Uint32Array(this.vertices);
 
     /**
-     * Holds the indices
+     * Holds the indices of the geometry (quads) to draw
      *
      * @member {Uint16Array}
      */
     this.indices = new Uint16Array(numIndices);
 
-    /**
-     *
-     *
-     * @member {number}
-     */
-    this.lastIndexCount = 0;
-
+    // fill the indices with the quads to draw
     for (var i=0, j=0; i < numIndices; i += 6, j += 4)
     {
         this.indices[i + 0] = j + 0;
@@ -17194,49 +17212,14 @@ function SpriteRenderer(renderer)
     }
 
     /**
-     *
-     *
-     * @member {boolean}
-     */
-    this.drawing = false;
-
-    /**
-     *
+     * The current size of the batch, each render() call adds to this number.
      *
      * @member {number}
      */
     this.currentBatchSize = 0;
 
     /**
-     *
-     *
-     * @member {BaseTexture}
-     */
-    this.currentBaseTexture = null;
-
-    /**
-     *
-     *
-     * @member {Array}
-     */
-    this.textures = [];
-
-    /**
-     *
-     *
-     * @member {Array}
-     */
-    this.blendModes = [];
-
-    /**
-     *
-     *
-     * @member {Array}
-     */
-    this.shaders = [];
-
-    /**
-     *
+     * The current sprites in the batch.
      *
      * @member {Array}
      */
@@ -17274,8 +17257,6 @@ SpriteRenderer.prototype.onContextChange = function ()
     this.vertexBuffer = gl.createBuffer();
     this.indexBuffer = gl.createBuffer();
 
-    // 65535 is max index, so 65535 / 6 = 10922.
-
     //upload the index data
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
@@ -17300,7 +17281,6 @@ SpriteRenderer.prototype.render = function (sprite)
     if (this.currentBatchSize >= this.size)
     {
         this.flush();
-        this.currentBaseTexture = texture.baseTexture;
     }
 
     // get the uvs for the texture
@@ -17600,13 +17580,6 @@ SpriteRenderer.prototype.destroy = function ()
     this.vertexBuffer = null;
     this.indexBuffer = null;
 
-    this.currentBaseTexture = null;
-
-    this.drawing = false;
-
-    this.textures = null;
-    this.blendModes = null;
-    this.shaders = null;
     this.sprites = null;
     this.shader = null;
 };
@@ -18920,7 +18893,7 @@ RenderTexture.prototype.renderWebGL = function (displayObject, matrix, clear, up
     this.textureBuffer.activate();
     
     // setWorld Alpha to ensure that the object is renderer at full opacity
-    displayObject.worldAlpha = displayObject.alpha;
+    displayObject.worldAlpha = 1;
 
     if (updateTransform)
     {
@@ -21983,8 +21956,10 @@ DisplayObject.prototype._renderCachedWebGL = function (renderer)
     {
         return;
     }
-    
+
     this._initCachedDisplayObject( renderer );
+
+    this._cachedSprite.worldAlpha = this.worldAlpha;
 
     renderer.setObjectRenderer(renderer.plugins.sprite);
     renderer.plugins.sprite.render( this._cachedSprite );

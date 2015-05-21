@@ -2,12 +2,14 @@ module.exports = PIXI.lights = {
 //    LitSprite: require('./light_1/LitSprite'),
 //    LightingRenderer: require('./light_1/webgl/LightingRenderer')
 
-    PointLight:             require('./light_2/lights/point/PointLight'),
-    DirectionalLight:       require('./light_2/lights/directional/DirectionalLight'),
-    EmissiveLight:          require('./light_2/lights/emissive/EmissiveLight'),
+    Light:                  require('./light_2/lights/Light'),
+    LightShader:            require('./light_2/lights/LightShader'),
 
-    LightRenderer:          require('./light_2/LightRenderer'),
-    WebGLDeferredRenderer:  require('./light_2/WebGLDeferredRenderer')
+    PointLight:             require('./light_2/lights/point/PointLight'),
+    PointLightShader:       require('./light_2/lights/point/PointLightShader'),
+
+    LightRenderer:          require('./light_2/renderers/LightRenderer'),
+    WebGLDeferredRenderer:  require('./light_2/renderers/WebGLDeferredRenderer')
 };
 
 require('./light_2/lightSpriteMixin');

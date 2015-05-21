@@ -1,5 +1,4 @@
-var Light = require('../Light'),
-    PointLightShader = require('./PointLightShader');
+var Light = require('../Light');
 
 /**
  * @class
@@ -14,12 +13,9 @@ var Light = require('../Light'),
 function PointLight(color, intensity, distance, decay) {
     Light.call(this, color);
 
-    this.intensity = intensity !== undefined ? intensity : 1;
-    this.distance = distance !== undefined ? distance : 0;
-    this.decay = decay !== undefined ? decay : 1;	// for physically correct lights, should be 2.
-
-    this.shader = 'pointLightShader';
+    this.shaderName = 'pointLightShader';
 }
 
 PointLight.prototype = Object.create(Light.prototype);
 PointLight.prototype.constructor = PointLight;
+module.exports = PointLight;
