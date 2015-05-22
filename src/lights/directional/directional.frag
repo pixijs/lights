@@ -1,11 +1,18 @@
-precision lowp float;
+/**
+ * Don't look at this, it isn't done yet!
+ */
+ 
+ 
+ 
+ 
+ 
+ 
+ precision lowp float;
 
-// imports the common uniforms like samplers, and ambient color
+// imports the common uniforms like samplers, and ambient/light color
 #pragma glslify: import("../shared/commonUniforms.glsl")
 
-uniform vec4 uLightColor;       // light color, alpha channel used for intensity.
 uniform vec3 uLightDirection;   // light direction
-uniform vec3 uLightFalloff;     // light falloff attenuation coefficients
 
 void main()
 {

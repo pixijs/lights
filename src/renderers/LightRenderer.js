@@ -90,7 +90,7 @@ LightRenderer.prototype.flush = function ()
 
         renderer.blendModeManager.setBlendMode(light.blendMode);
 
-        // set uniforms
+        // set uniforms, can do some optimizations here.
         light.worldTransform.toArray(true, shader.uniforms.translationMatrix.value);
         renderer.currentRenderTarget.projectionMatrix.toArray(true, shader.uniforms.projectionMatrix.value);
 
@@ -134,6 +134,7 @@ LightRenderer.prototype.flush = function ()
             gl.activeTexture(gl.TEXTURE1);
             gl.bindTexture(gl.TEXTURE_2D, normalsTexture.baseTexture._glTextures[gl.id]);
 
+            // update indices
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, light._indexBuffer);
             gl.bufferSubData(gl.ELEMENT_ARRAY_BUFFER, 0, light.indices);
         }

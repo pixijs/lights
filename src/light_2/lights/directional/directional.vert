@@ -1,8 +1,0 @@
-precision lowp float;
-
-attribute vec2 aVertexPosition;
-
-void main() {
-    // full screen quad proxy to draw upon
-    gl_Position = vec4(sign(aVertexPosition.xy), 0.0, 1.0);
-}

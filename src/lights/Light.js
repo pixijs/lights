@@ -1,4 +1,10 @@
 /**
+ * Excuse the mess, haven't cleaned this up yet!
+ */
+
+
+
+/**
  * @class
  * @extends PIXI.DisplayObject
  * @memberof PIXI.lights
@@ -53,7 +59,7 @@ function Light(color, vertices, indices) {
 
     this.height = 0.075;
 
-    this.falloff = [0.4, 7.0, 40.0];
+    this.falloff = [0.2, 5, 20];
 
     // hack around bug in interaction manager. It dies when processing raw DOs
 //    this.children = [];

@@ -33,8 +33,6 @@ function WebGLDeferredRenderer(width, height, options)
 
     this.renderingNormals = false;
 
-    this._doWebGLRender = PIXI.WebGLRenderer.prototype.render;
-
     PIXI.WebGLRenderer.call(this, width, height, options);
 }
 
@@ -98,21 +96,14 @@ Object.assign(WebGLDeferredRenderer.prototype, {
         // render diffuse
         this.renderingNormals = false;
         this.diffuseTexture.render(object);
-//        this.renderTarget = this.diffuseRenderTarget;
-//        this._doWebGLRender(object);
 
         // render normals
         this.renderingNormals = true;
         this.normalsTexture.render(object);
-//        this.renderTarget = this.normalsRenderTarget;
-//        this._doWebGLRender(object);
 
         // render lights
         this.setRenderTarget(this.renderTarget);
         this.setObjectRenderer(this.plugins.lights);
         this.plugins.lights.flush();
-
-        // composite to viewport
-//        this._composite();
     }
 });

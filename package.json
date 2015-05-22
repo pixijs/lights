@@ -14,7 +14,6 @@
     "url": "https://github.com/pixijs/pixi-lights/issues"
   },
   "scripts": {
-    "test": "gulp test",
     "build": "gulp build",
     "docs": "./node_modules/.bin/jsdoc -c ./gulp/util/jsdoc.conf.json"
   },
