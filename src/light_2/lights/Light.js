@@ -30,12 +30,12 @@ function Light(color, vertices, indices) {
     this.indices = new Uint16Array([0,1,2, 0,2,3]);
 
     /**
-     * The blend mode to be applied to the sprite. Set to blendModes.NORMAL to remove any blend mode.
+     * The blend mode to be applied to the light.
      *
      * @member {number}
-     * @default CONST.BLEND_MODES.NORMAL;
+     * @default CONST.BLEND_MODES.ADD;
      */
-    this.blendMode = PIXI.BLEND_MODES.NORMAL;
+    this.blendMode = PIXI.BLEND_MODES.ADD;
 
     this._vertexBuffer = null;
     this._indexBuffer = null;

@@ -31,6 +31,9 @@
                     var block = new PIXI.Sprite(res.block_diffuse.texture);
                     var block1 = new PIXI.Sprite(res.block_diffuse.texture);
                     var block2 = new PIXI.Sprite(res.block_diffuse.texture);
+                    
+                    var light1 = new PIXI.lights.PointLight();
+                    var light2 = new PIXI.lights.PointLight();
 
                     bg.normalTexture = res.bg_normal.texture;
                     block.normalTexture = res.block_normal.texture;
@@ -41,12 +44,17 @@
                     block1.position.set(500, 100);
                     block2.position.set(300, 400);
 
+                    light1.position.set(50, 50);
+                    light2.position.set(950, 500);
+
                     stage.addChild(bg);
                     stage.addChild(block);
                     stage.addChild(block1);
                     stage.addChild(block2);
 
                     stage.addChild(light);
+                    stage.addChild(light1);
+                    stage.addChild(light2);
 
                     renderer.view.addEventListener('mousemove', function (e) {
                         var rect = e.target.getBoundingClientRect();
