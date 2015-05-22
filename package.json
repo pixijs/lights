@@ -15,6 +15,7 @@
   },
   "scripts": {
     "build": "gulp build",
+    "start": "hs .",
     "docs": "./node_modules/.bin/jsdoc -c ./gulp/util/jsdoc.conf.json"
   },
   "engines": {
@@ -44,6 +45,7 @@
     "gulp-sourcemaps": "^1.5.2",
     "gulp-uglify": "^1.0.2",
     "gulp-util": "^3.0.1",
+    "http-server": "^0.8.0",
     "jaguarjs-jsdoc": "git+https://github.com/davidshimjs/jaguarjs-jsdoc.git",
     "jsdoc": "^3.3.0",
     "jshint-summary": "^0.4.0",
