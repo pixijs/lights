@@ -21,15 +21,39 @@
             document.body.appendChild(renderer.view);
 
             PIXI.loader
-                .add('diffuse', 'test/BGTextureTest.jpg')
-                .add('normal', 'test/BGTextureNORM.jpg')
+                .add('bg_diffuse', 'test/BGTextureTest.jpg')
+                .add('bg_normal', 'test/BGTextureNORM.jpg')
+                .add('block_diffuse', 'test/block.png')
+                .add('block_normal', 'test/blockNormalMap.png')
                 .load(function (loader, res) {
-                    var sprite = new PIXI.Sprite(res.diffuse.texture);
+                    var bg = new PIXI.Sprite(res.bg_diffuse.texture);
 
-                    sprite.normalTexture = res.normal.texture;
+                    var block = new PIXI.Sprite(res.block_diffuse.texture);
+                    var block1 = new PIXI.Sprite(res.block_diffuse.texture);
+                    var block2 = new PIXI.Sprite(res.block_diffuse.texture);
 
-                    stage.addChild(sprite);
+                    bg.normalTexture = res.bg_normal.texture;
+                    block.normalTexture = res.block_normal.texture;
+                    block1.normalTexture = res.block_normal.texture;
+                    block2.normalTexture = res.block_normal.texture;
+                    
+                    block.position.set(100, 100);
+                    block1.position.set(500, 100);
+                    block2.position.set(300, 400);
+
+                    stage.addChild(bg);
+                    stage.addChild(block);
+                    stage.addChild(block1);
+                    stage.addChild(block2);
+
                     stage.addChild(light);
+
+                    renderer.view.addEventListener('mousemove', function (e) {
+                        var rect = e.target.getBoundingClientRect();
+
+                        light.position.x = e.clientX - rect.left;
+                        light.position.y = e.clientY - rect.top;
+                    });
 
                     animate();
                 });

@@ -6337,6 +6337,10 @@ module.exports={
     "test": "gulp && testem ci",
     "docs": "jsdoc -c ./gulp/util/jsdoc.conf.json -R README.md"
   },
+  "files": [
+    "bin/",
+    "src/"
+  ],
   "dependencies": {
     "async": "^0.9.0",
     "brfs": "^1.4.0",
@@ -6346,16 +6350,16 @@ module.exports={
     "resource-loader": "^1.6.0"
   },
   "devDependencies": {
-    "browserify": "^9.0.8",
-    "chai": "^2.2.0",
-    "del": "^1.1.1",
+    "browserify": "^10.2.1",
+    "chai": "^2.3.0",
+    "del": "^1.2.0",
     "gulp": "^3.8.11",
-    "gulp-cached": "^1.0.4",
+    "gulp-cached": "^1.1.0",
     "gulp-concat": "^2.5.2",
     "gulp-debug": "^2.0.1",
     "gulp-jshint": "^1.10.0",
     "gulp-mirror": "^0.4.0",
-    "gulp-plumber": "^1.0.0",
+    "gulp-plumber": "^1.0.1",
     "gulp-rename": "^1.2.2",
     "gulp-sourcemaps": "^1.5.2",
     "gulp-uglify": "^1.2.0",
@@ -6364,13 +6368,13 @@ module.exports={
     "jsdoc": "^3.3.0-beta3",
     "jshint-summary": "^0.4.0",
     "minimist": "^1.1.1",
-    "mocha": "^2.2.4",
+    "mocha": "^2.2.5",
     "require-dir": "^0.3.0",
-    "run-sequence": "^1.0.2",
-    "testem": "^0.8.2",
+    "run-sequence": "^1.1.0",
+    "testem": "^0.8.3",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0",
-    "watchify": "^3.1.2"
+    "watchify": "^3.2.1"
   },
   "browserify": {
     "transform": [
@@ -10077,14 +10081,14 @@ Matrix.prototype.fromArray = function (array)
  * @param transpose {boolean} Whether we need to transpose the matrix or not
  * @return {number[]} the newly created array which contains the matrix
  */
-Matrix.prototype.toArray = function (transpose)
+Matrix.prototype.toArray = function (transpose, out)
 {
     if (!this.array)
     {
         this.array = new Float32Array(9);
     }
 
-    var array = this.array;
+    var array = out || this.array;
 
     if (transpose)
     {
@@ -15765,7 +15769,7 @@ Shader.prototype.syncUniform = function (uniform)
         case 't':
         case 'sampler2D':
 
-            if (!uniform.value || (uniform.value.baseTexture && !uniform.value.baseTexture.hasLoaded))
+            if (!uniform.value || !uniform.value.baseTexture.hasLoaded)
             {
                 break;
             }
@@ -15773,29 +15777,14 @@ Shader.prototype.syncUniform = function (uniform)
             // activate this texture
             gl.activeTexture(gl['TEXTURE' + this.textureCount]);
 
-            var texture;
+            var texture = uniform.value.baseTexture._glTextures[gl.id];
 
-            // normal PIXI.Texture
-            if (uniform.value.baseTexture)
+            if (!texture)
             {
+                this.initSampler2D(uniform);
+
+                // set the textur to the newly created one..
                 texture = uniform.value.baseTexture._glTextures[gl.id];
-
-                if (!texture)
-                {
-                    this.initSampler2D(uniform);
-
-                    // set the textur to the newly created one..
-                    texture = uniform.value.baseTexture._glTextures[gl.id];
-                }
-            }
-            // WebGL RenderTarget
-            else if (uniform.value.frameBuffer)
-            {
-                texture = uniform.value.texture;
-
-                if (!texture) {
-                    throw new Error('Connot bind a root RenderTarget to a shader!');
-                }
             }
 
             // bind the texture
@@ -26964,7 +26953,6 @@ MeshRenderer.prototype.onContextChange = function ()
  */
 MeshRenderer.prototype.render = function (mesh)
 {
-//    return;
     if(!mesh._vertexBuffer)
     {
         this._initWebGL(mesh);

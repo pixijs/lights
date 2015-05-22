@@ -31,8 +31,6 @@ function WebGLDeferredRenderer(width, height, options)
     this.ambientColor = options.ambientColor || this._lightAmbientColor;
     this.ambientIntensity = options.ambientIntensity || this._lightAmbientColorRgba[3];
 
-    this.lights = [];
-
     this.renderingNormals = false;
 
     this._doWebGLRender = PIXI.WebGLRenderer.prototype.render;
@@ -93,11 +91,6 @@ Object.assign(WebGLDeferredRenderer.prototype, {
         // first create our render targets.
         this.diffuseTexture = new PIXI.RenderTexture(this, this.width, this.height, null, this.resolution);
         this.normalsTexture = new PIXI.RenderTexture(this, this.width, this.height, null, this.resolution);
-
-//        this.outputRenderTarget = this.renderTarget;
-
-        // render targets bind when they get created, so we need to reset back to the default one.
-        this.renderTarget.activate();
     },
 
     render: function (object)
@@ -121,13 +114,5 @@ Object.assign(WebGLDeferredRenderer.prototype, {
 
         // composite to viewport
 //        this._composite();
-    },
-
-    _renderLights: function () {
-        
-    },
-
-    _updateLight: function () {
-        
     }
 });

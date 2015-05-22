@@ -51,20 +51,58 @@ PIXI.Sprite.prototype._renderWebGL = function (renderer)
  *
  * @param [color=0xFFFFFF] {number} The color of the light.
  */
-function Light(color) {
+function Light(color, vertices, indices) {
+    if (this.constructor === Light) {
+        throw new Error('Light is an abstract base and should not be created directly!');
+    }
+
     PIXI.DisplayObject.call(this);
 
+    /**
+     * An array of vertices
+     *
+     * @member {Float32Array}
+     */
+    this.vertices = vertices || new Float32Array([0,   0,
+                                                  1024, 0,
+                                                  1024, 512,
+                                                  0,   512]);
+
+    /**
+     * An array containing the indices of the vertices
+     *
+     * @member {Uint16Array}
+     */
+    this.indices = new Uint16Array([0,1,2, 0,2,3]);
+
+    /**
+     * The blend mode to be applied to the sprite. Set to blendModes.NORMAL to remove any blend mode.
+     *
+     * @member {number}
+     * @default CONST.BLEND_MODES.NORMAL;
+     */
+    this.blendMode = PIXI.BLEND_MODES.NORMAL;
+
+    this._vertexBuffer = null;
+    this._indexBuffer = null;
+
+    this.needsUpdate = true;
+
+    // light stuff...
+
     this._color = 0xFFFFFF;
-    this._colorRgba = [0, 0, 0, 1];
+    this._colorRgba = [1, 1, 1, 1];
 
-    this.color = color !== undefined ? color : this._color;
+    if (color || color === 0) {
+        this.color = color;
+    }
 
-    this.height = 1;
-    
+    this.height = 0.075;
+
     this.falloff = [0.4, 7.0, 40.0];
 
     // hack around bug in interaction manager. It dies when processing raw DOs
-    this.children = [];
+//    this.children = [];
 
     this.shaderName = null;
 }
@@ -99,17 +137,36 @@ Object.defineProperties(Light.prototype, {
  * @param renderer {WebGLRenderer}
  * @private
  */
+//Light.prototype.renderWebGL = function (renderer)
+//{
+//    // I actually don't want to interrupt the current batch, so don't set light as the current object renderer.
+//    // light renderer works a bit differently in that ALL lights are in a single batch no matter what.
+//
+//    // renderer.setObjectRenderer(renderer.plugins.lights);
+//
+////    if (renderer.renderingNormals) {
+////        renderer.plugins.lights.render(this);
+//        renderer.lights.push(this);
+////    }
+//};
+
 Light.prototype.renderWebGL = function (renderer)
 {
-    // I actually don't want to interrupt the current batch, so don't set light as the current object renderer.
-    // light renderer works a bit differently in that ALL lights are in a single batch no matter what.
-
-    // renderer.setObjectRenderer(renderer.plugins.lights);
-
-    if (renderer.renderingNormals) {
-        renderer.plugins.lights.render(this);
+    // add lights to their renderer on the normals pass
+    if (!renderer.renderingNormals) {
+        return;
     }
+
+//    renderer.setObjectRenderer(renderer.plugins.lights);
+    renderer.plugins.lights.render(this);
 };
+
+Light.prototype.destroy = function ()
+{
+    PIXI.DisplayObject.prototype.destroy.call(this);
+
+    // TODO: Destroy buffers!
+}
 
 },{}],4:[function(require,module,exports){
 
@@ -122,18 +179,25 @@ Light.prototype.renderWebGL = function (renderer)
  */
 function LightShader(shaderManager, vertexSrc, fragmentSrc, customUniforms, customAttributes) {
     var uniforms = {
-        projectionMatrix:   { type: 'mat3', value: new Float32Array([1, 0, 0,
-                                                                     0, 1, 0,
-                                                                     0, 0, 1]) },
+        alpha:              { type: '1f', value: 0 },
+        translationMatrix:  { type: 'mat3', value: new Float32Array(9) },
+        projectionMatrix:   { type: 'mat3', value: new Float32Array(9) },
+
         // textures from the previously rendered FBOs
         uSampler:       { type: 'sampler2D', value: null },
         uNormalSampler: { type: 'sampler2D', value: null },
 
         // size of the renderer viewport
-        uViewSize:      { type: '2f', value: [0, 0] },
+        uViewSize:      { type: '2f', value: new Float32Array(2) },
 
         // ambient lighting color, alpha channel used for intensity
-        uAmbientColor:  { type: '4f', value: shaderManager.renderer._lightAmbientColorRgba }
+        uAmbientColor:  { type: '4f', value: new Float32Array(4) },
+
+        // light color, alpha channel used for intensity.
+        uLightColor:    { type: '4f', value: new Float32Array([1, 1, 1, 1]) },
+
+        // light falloff attenuation coefficients
+        uLightFalloff:  { type: '3f', value: new Float32Array([0, 0, 0]) }
     };
 
     if (customUniforms)
@@ -156,12 +220,15 @@ function LightShader(shaderManager, vertexSrc, fragmentSrc, customUniforms, cust
         }
     }
 
-    PIXI.Shader.call(this, shaderManager, vertexSrc, fragmentSrc, uniforms, attributes);
+    PIXI.Shader.call(this, shaderManager, vertexSrc || LightShader.defaultVertexSrc, fragmentSrc || LightShader.defaultFragmentSrc, uniforms, attributes);
 }
 
 LightShader.prototype = Object.create(PIXI.Shader.prototype);
 LightShader.prototype.constructor = LightShader;
 module.exports = LightShader;
+
+LightShader.defaultVertexSrc = "#define GLSLIFY 1\n\nprecision lowp float;\r\n\r\nattribute vec2 aVertexPosition;\r\n\r\nuniform mat3 translationMatrix;\r\nuniform mat3 projectionMatrix;\r\n\r\nvoid main(void) {\r\n    gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\r\n}\r\n";
+LightShader.defaultFragmentSrc = "#define GLSLIFY 1\n\nprecision lowp float;\r\n\r\nuniform sampler2D uSampler;\r\nuniform sampler2D uNormalSampler;\r\n\r\nuniform mat3 translationMatrix;\r\n\r\nuniform float alpha;\r\n\r\nuniform vec2 uViewSize;\r\n\r\nuniform vec4 uAmbientColor; // ambient color, alpha channel used for intensity.\r\n\r\nuniform vec2 uLightPosition;// light position, normalized to viewport.\r\nuniform vec4 uLightColor;   // light color, alpha channel used for intensity.\r\nuniform vec3 uLightFalloff; // light falloff attenuation coefficients.\r\n\n\r\nvoid main(void){\r\n//vec4 diffuseColor = texture2D(uSampler, vTextureCoord);\r\n//vec4 normalColor = texture2D(uNormalSampler, vTextureCoord);\r\n\r\nvec2 texCoord = gl_FragCoord.xy / uViewSize;\r\n\r\nvec4 diffuseColor = texture2D(uSampler, texCoord);\r\nvec4 normalColor = texture2D(uNormalSampler, texCoord);\r\n\r\n// if no normal color here, just discard\r\nif (normalColor.a == 0.0) discard;\r\n\n\r\n    // this shader should always be overriden by a specific light type...\r\n    gl_FragColor = vec4(mix(diffuseColor.rgb, normalColor.rgb, 0.5), diffuseColor.a);\r\n}\r\n";
 
 },{}],5:[function(require,module,exports){
 var Light = require('../Light');
@@ -200,16 +267,13 @@ function PointLightShader(shaderManager) {
     LightShader.call(this,
         shaderManager,
         // vertex shader
-        "#define GLSLIFY 1\n\nprecision lowp float;\r\n\r\nattribute vec2 aVertexPosition;\r\nattribute vec4 aLightColor;\r\nattribute vec3 aLightPosition;\r\nattribute vec3 aLightFalloff;\r\n\r\nuniform mat3 projectionMatrix;\r\n\r\nvarying vec4 vLightColor;\r\nvarying vec3 vLightPosition;\r\nvarying vec3 vLightFalloff;\r\n\r\nvoid main(void) {\r\n    gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\r\n\r\n    vLightColor = aLightColor;\r\n    vLightPosition = aLightPosition;\r\n    vLightFalloff = aLightFalloff;\r\n}\r\n",
-        // fragment shader
-        "#define GLSLIFY 1\n\nprecision lowp float;\r\n\r\n// imports the common uniforms like samplers, and ambient color\r\nuniform sampler2D uSampler;\r\nuniform sampler2D uNormalSampler;\r\n\r\nuniform vec2 uViewSize;\r\n\r\nuniform vec4 uAmbientColor; // ambient color, alpha channel used for intensity.\r\n\n\r\nvarying vec4 vLightColor;   // light color, alpha channel used for intensity.\r\nvarying vec3 vLightPosition;// light position normalized to view size (position / viewport)\r\nvarying vec3 vLightFalloff; // light falloff attenuation coefficients\r\n\r\nvoid main()\r\n{\r\n// sets diffuseColor and normalColor from their respective textures\r\nvec2 textureCoord = gl_FragCoord.xy / uViewSize;\r\n\r\nvec4 diffuseColor = texture2D(uSampler, textureCoord);\r\nvec4 normalColor = texture2D(uNormalSampler, textureCoord);\r\n\r\n// if no normal color here, just discard\r\nif (normalColor.a == 0.0) discard;\r\n\n\r\n    gl_FragColor = diffuseColor;\r\n}",
-        // custom uniforms
         null,
-        // custom attributes
+        // fragment shader
+        "#define GLSLIFY 1\n\nprecision lowp float;\r\n\r\n// imports the common uniforms like samplers, and ambient color\r\nuniform sampler2D uSampler;\r\nuniform sampler2D uNormalSampler;\r\n\r\nuniform mat3 translationMatrix;\r\n\r\nuniform float alpha;\r\n\r\nuniform vec2 uViewSize;\r\n\r\nuniform vec4 uAmbientColor; // ambient color, alpha channel used for intensity.\r\n\r\nuniform vec2 uLightPosition;// light position, normalized to viewport.\r\nuniform vec4 uLightColor;   // light color, alpha channel used for intensity.\r\nuniform vec3 uLightFalloff; // light falloff attenuation coefficients.\r\n\n\r\nuniform float uLightHeight;\r\n\r\nvoid main()\r\n{\r\n// sets diffuseColor and normalColor from their respective textures\r\n//#pragma glslify: import(\"../shared/loadColors.glsl\")\r\n\r\nvec2 texCoord = gl_FragCoord.xy / uViewSize;\r\ntexCoord.y = 1.0 - texCoord.y;\r\n\r\nvec4 diffuseColor = texture2D(uSampler, texCoord);\r\nvec4 normalColor = texture2D(uNormalSampler, texCoord);\r\n\r\n// if no normal color here, just discard\r\n//if (normalColor.a == 0.0) discard;\r\n\r\n\r\n\r\n\r\n\r\n    vec2 lightPosition = translationMatrix[2].xy / uViewSize;\r\n//    lightPosition.y = 1.0 - lightPosition.y;\r\n\r\n    // the directional vector of the light\r\n    vec3 lightVector = vec3(lightPosition - texCoord, uLightHeight);\r\n\r\n    // correct for aspect ratio\r\n//    lightVector.x *= uViewSize.x / uViewSize.y;\r\n\r\n\r\n\r\n\r\n// does lambertian illumination calculations and sets \"finalColor\"\r\n//#pragma glslify: import(\"../shared/computeLambert.glsl\")\r\n\r\n// compute Distance\r\nfloat D = length(lightVector);\r\n\r\n// normalize vectors\r\nvec3 N = normalize(normalColor.xyz * 2.0 - 1.0);\r\nvec3 L = normalize(lightVector);\r\n\r\n// pre-multiply light color with intensity\r\n// then perform \"N dot L\" to determine our diffuse\r\nvec3 diffuse = (uLightColor.rgb * uLightColor.a) * max(dot(N, L), 0.0);\r\n\r\n// pre-multiply ambient color with intensity\r\nvec3 ambient = uAmbientColor.rgb * uAmbientColor.a;\r\n\r\n// calculate attenuation\r\nfloat attenuation = 1.0 / (uLightFalloff.x + (uLightFalloff.y * D) + (uLightFalloff.z * D * D));\r\n\r\n// calculate final intesity and color, then combine\r\nvec3 intensity = ambient + diffuse * attenuation;\r\nvec3 finalColor = diffuseColor.rgb * intensity;\r\n\r\n\r\n\r\n\r\n\r\n    gl_FragColor = vec4(finalColor, diffuseColor.a);\r\n}",
+        // custom uniforms
         {
-            aLightColor: 1,
-            aLightPosition: 2,
-            aLightFalloff: 3
+            // height of the light above the viewport
+            uLightHeight: { type: '1f', value: 0.075 }
         }
     );
 }
@@ -233,70 +297,18 @@ function LightRenderer(renderer)
 {
     PIXI.ObjectRenderer.call(this, renderer);
 
-    /**
-     * Number of values sent in the vertex buffer.
-     *
-     * To support:
-     *  attribute vec2 aVertexPosition;
-     *  attribute vec4 aLightColor;
-     *  attribute vec3 aLightPosition;
-     *  attribute vec3 aLightFalloff;
-     * We need 12 values.
-     *
-     * @member {number}
-     */
-    this.vertSize = 12;
-
-    /**
-     * The size of the vertex information in bytes.
-     *
-     * @member {number}
-     */
-    this.vertByteSize = this.vertSize * 4;
-
-    /**
-     * The number of lights this renderer can draw at a time.
-     *
-     * @member {number}
-     */
-    this.size = LightRenderer.MAX_LIGHTS;
-
-    // the total number of bytes in our batch
-    var numVerts = (this.size * 4) * this.vertByteSize;
-
     // the total number of indices in our batch, there are 6 points per quad.
-    var numIndices = this.size * 6;
+    var numIndices = LightRenderer.MAX_LIGHTS * 6;
 
     /**
-     * Holds the vertex data that will be sent to the vertex shader.
-     *
-     * @member {ArrayBuffer}
-     */
-    this.vertices = new ArrayBuffer(numVerts);
-
-    /**
-     * View on the vertices as a Float32Array for positions
-     *
-     * @member {Float32Array}
-     */
-    this.positions = new Float32Array(this.vertices);
-
-    /**
-     * View on the vertices as a Uint32Array for colors
-     *
-     * @member {Uint32Array}
-     */
-    this.colors = new Uint32Array(this.vertices);
-
-    /**
-     * Holds the indices of the geometry (quads) to draw.
+     * Holds the indices
      *
      * @member {Uint16Array}
      */
     this.indices = new Uint16Array(numIndices);
 
-    // fill the indices with the quads to draw
-    for (var i=0, j=0; i < numIndices; i += 6, j += 4)
+    //TODO this could be a single buffer shared amongst all renderers as we reuse this set up in most renderers
+    for (var i = 0, j = 0; i < numIndices; i += 6, j += 4)
     {
         this.indices[i + 0] = j + 0;
         this.indices[i + 1] = j + 1;
@@ -319,20 +331,6 @@ function LightRenderer(renderer)
      * @member {Light[]}
      */
     this.lights = [];
-
-    /**
-     * The vertex GL buffer that will be uploaded to the GPU.
-     * 
-     * @member {glBuffer}
-     */
-    this.vertexBuffer = null;
-
-    /**
-     * The index GL buffer that will be uploaded to the GPU.
-     * 
-     * @member {glBuffer}
-     */
-    this.vertexBuffer = null;
 }
 
 LightRenderer.MAX_LIGHTS = 500;
@@ -344,216 +342,139 @@ module.exports = LightRenderer;
 PIXI.WebGLRenderer.registerPlugin('lights', LightRenderer);
 
 /**
- * Sets up the renderer context and necessary buffers.
- *
- * @private
- * @param gl {WebGLRenderingContext} the current WebGL drawing context
- */
-LightRenderer.prototype.onContextChange = function ()
-{
-    var gl = this.renderer.gl;
-
-    // create a couple of buffers
-    this.vertexBuffer = gl.createBuffer();
-    this.indexBuffer = gl.createBuffer();
-
-    // upload the index data
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indices, gl.STATIC_DRAW);
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, this.vertices, gl.DYNAMIC_DRAW);
-};
-
-/**
  * Renders the light object.
  *
- * @param light {Light} The light to render.
+ * @param light {Light} the light to render
  */
 LightRenderer.prototype.render = function (light)
 {
-    if (this.currentBatchSize >= this.size)
-    {
-        this.flush();
-    }
-
-    var index = this.currentBatchSize * this.vertByteSize;
-
-    var worldTransform = light.worldTransform;
-
-    var a = worldTransform.a;
-    var b = worldTransform.b;
-    var c = worldTransform.c;
-    var d = worldTransform.d;
-    var tx = worldTransform.tx;
-    var ty = worldTransform.ty;
-
-    var positions = this.positions;
-    var colors = this.colors;
-
-    if (this.renderer.roundPixels)
-    {
-        // xy
-        positions[index+0] = positions[index+12] = positions[index+24] = positions[index+36] = a + c + tx | 0;
-        positions[index+1] = positions[index+13] = positions[index+25] = positions[index+37] = d + b + ty | 0;
-    }
-    else
-    {
-        // xy
-        positions[index+0] = positions[index+12] = positions[index+24] = positions[index+36] = a + c + tx;
-        positions[index+1] = positions[index+13] = positions[index+25] = positions[index+37] = d + b + ty;
-    }
-
-    colors[index+2] = colors[index+14] = colors[index+26] = colors[index+38] = light._colorRgba[0];
-    colors[index+3] = colors[index+15] = colors[index+27] = colors[index+39] = light._colorRgba[1];
-    colors[index+4] = colors[index+16] = colors[index+28] = colors[index+40] = light._colorRgba[2];
-    colors[index+5] = colors[index+17] = colors[index+29] = colors[index+41] = light._colorRgba[3];
-
-    positions[index+6] = positions[index+18] = positions[index+30] = positions[index+42] = positions[index];
-    positions[index+7] = positions[index+19] = positions[index+31] = positions[index+43] = positions[index+1];
-    positions[index+8] = positions[index+20] = positions[index+32] = positions[index+44] = this.renderer.roundPixels ? (light.height | 0) : light.height;
-
-    positions[index+9 ] = positions[index+21] = positions[index+33] = positions[index+45] = light.falloff[0];
-    positions[index+10] = positions[index+22] = positions[index+34] = positions[index+46] = light.falloff[1];
-    positions[index+11] = positions[index+23] = positions[index+35] = positions[index+47] = light.falloff[2];
-
     this.lights[this.currentBatchSize++] = light;
 };
 
-/**
- * Renders the content and empties the current batch.
- *
- */
 LightRenderer.prototype.flush = function ()
 {
-    // If the batch is length 0 then return as there is nothing to draw
-    if (this.currentBatchSize === 0)
+    var renderer = this.renderer,
+        gl = renderer.gl,
+        diffuseTexture = renderer.diffuseTexture,
+        normalsTexture = renderer.normalsTexture,
+        lastShader = null;
+
+    for (var i = 0; i < this.currentBatchSize; ++i)
     {
-        return;
-    }
+        var light = this.lights[i],
+            shader = light.shader || this.renderer.shaderManager.plugins[light.shaderName];
 
-    var gl = this.renderer.gl;
-    var shader;
-
-    // upload the verts to the buffer
-//    if (this.currentBatchSize > (this.size * 0.5))
-//    {
-        gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.vertices);
-//    }
-//    else
-//    {
-//        var view = this.positions.subarray(0, this.currentBatchSize * this.vertByteSize);
-//        gl.bufferSubData(gl.ARRAY_BUFFER, 0, view);
-//    }
-
-    var nextShader;
-    var batchSize = 0;
-    var start = 0;
-
-    var currentShader = null;
-
-    var light;
-
-    for (var i = 0, j = this.currentBatchSize; i < j; ++i)
-    {
-        light = this.lights[i];
-
-        nextShader = light.shader || this.renderer.shaderManager.plugins[light.shaderName];
-
-        if (currentShader !== nextShader)
+        if (!light._vertexBuffer)
         {
-            this.renderBatch(batchSize, start);
-
-            start = i;
-            batchSize = 0;
-
-            currentShader = nextShader;
-
-            shader = currentShader.shaders ? currentShader.shaders[gl.id] : currentShader;
-
-            this.renderer.shaderManager.setShader(shader);
-
-            // set some uniform values
-            shader.uniforms.projectionMatrix.value = this.renderer.currentRenderTarget.projectionMatrix.toArray(true);
-            
-            shader.uniforms.uSampler.value = this.renderer.diffuseTexture;
-            shader.uniforms.uNormalSampler.value = this.renderer.normalTexture;
-
-            shader.uniforms.uViewSize.value[0] = this.renderer.width;
-            shader.uniforms.uViewSize.value[1] = this.renderer.height;
-
-            shader.syncUniforms();
-
-            gl.activeTexture(gl.TEXTURE0);
+            this._initWebGL(light);
         }
 
-        batchSize++;
-    }
+        // set shader if needed
+        if (shader !== lastShader) {
+            lastShader = shader;
+            renderer.shaderManager.setShader(shader);
+        }
 
-    this.renderBatch(batchSize, start);
+        renderer.blendModeManager.setBlendMode(light.blendMode);
+
+        // set uniforms
+        light.worldTransform.toArray(true, shader.uniforms.translationMatrix.value);
+        renderer.currentRenderTarget.projectionMatrix.toArray(true, shader.uniforms.projectionMatrix.value);
+
+        shader.uniforms.alpha.value = light.worldAlpha;
+
+        shader.uniforms.uViewSize.value[0] = renderer.width;
+        shader.uniforms.uViewSize.value[1] = renderer.height;
+
+        shader.uniforms.uAmbientColor.value[0] = renderer._lightAmbientColorRgba[0];
+        shader.uniforms.uAmbientColor.value[1] = renderer._lightAmbientColorRgba[1];
+        shader.uniforms.uAmbientColor.value[2] = renderer._lightAmbientColorRgba[2];
+        shader.uniforms.uAmbientColor.value[3] = renderer._lightAmbientColorRgba[3];
+
+        shader.uniforms.uLightColor.value[0] = light._colorRgba[0];
+        shader.uniforms.uLightColor.value[1] = light._colorRgba[1];
+        shader.uniforms.uLightColor.value[2] = light._colorRgba[2];
+        shader.uniforms.uLightColor.value[3] = light._colorRgba[3];
+
+        shader.uniforms.uLightFalloff.value[0] = light.falloff[0];
+        shader.uniforms.uLightFalloff.value[1] = light.falloff[1];
+        shader.uniforms.uLightFalloff.value[2] = light.falloff[2];
+
+        shader.syncUniforms();
+
+        // have to set these manually due to the way pixi base shader makes assumptions about texture units
+        gl.uniform1i(shader.uniforms.uSampler._location, 0);
+        gl.uniform1i(shader.uniforms.uNormalSampler._location, 1);
+
+        if (!light.needsUpdate)
+        {
+            // update vertex data
+            gl.bindBuffer(gl.ARRAY_BUFFER, light._vertexBuffer);
+            gl.bufferSubData(gl.ARRAY_BUFFER, 0, light.vertices);
+            gl.vertexAttribPointer(shader.attributes.aVertexPosition, 2, gl.FLOAT, false, 0, 0);
+
+            // bind diffuse texture
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, diffuseTexture.baseTexture._glTextures[gl.id]);
+
+            // bind normal texture
+            gl.activeTexture(gl.TEXTURE1);
+            gl.bindTexture(gl.TEXTURE_2D, normalsTexture.baseTexture._glTextures[gl.id]);
+
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, light._indexBuffer);
+            gl.bufferSubData(gl.ELEMENT_ARRAY_BUFFER, 0, light.indices);
+        }
+        else
+        {
+            light.needsUpdate = false;
+
+            // upload vertex data
+            gl.bindBuffer(gl.ARRAY_BUFFER, light._vertexBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, light.vertices, gl.STATIC_DRAW);
+            gl.vertexAttribPointer(shader.attributes.aVertexPosition, 2, gl.FLOAT, false, 0, 0);
+
+            // bind diffuse texture
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, diffuseTexture.baseTexture._glTextures[gl.id]);
+
+            // bind normal texture
+            gl.activeTexture(gl.TEXTURE1);
+            gl.bindTexture(gl.TEXTURE_2D, normalsTexture.baseTexture._glTextures[gl.id]);
+
+            // static upload of index buffer
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, light._indexBuffer);
+            gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, light.indices, gl.STATIC_DRAW);
+        }
+
+        gl.drawElements(gl.TRIANGLES, light.indices.length, gl.UNSIGNED_SHORT, 0);
+    }
 
     this.currentBatchSize = 0;
 };
 
 /**
- * Draws the currently batched lights.
+ * Prepares all the buffers to render this light.
  *
- * @private
- * @param texture {Texture}
- * @param size {number}
- * @param startIndex {number}
+ * @param light {Light} The light object to prepare for rendering.
  */
-LightRenderer.prototype.renderBatch = function (size, startIndex)
+LightRenderer.prototype._initWebGL = function (light)
 {
-    if (size === 0)
-    {
-        return;
-    }
-
     var gl = this.renderer.gl;
 
-    gl.drawElements(gl.TRIANGLES, size * 6, gl.UNSIGNED_SHORT, startIndex * 6 * 2);
+    // create the buffers
+    light._vertexBuffer = gl.createBuffer();
+    light._indexBuffer = gl.createBuffer();
 
-    // increment the draw count
-    this.renderer.drawCount++;
+    gl.bindBuffer(gl.ARRAY_BUFFER, light._vertexBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, light.vertices, gl.DYNAMIC_DRAW);
+
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, light._indexBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, light.indices, gl.STATIC_DRAW);
 };
 
-LightRenderer.prototype.start = function () {
-    var gl = this.renderer.gl;
-
-    // bind the buffers
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
-
-    // set the vertex attributes
-    var shader = this.renderer.shaderManager.plugins.pointLightShader,
-        stride = this.vertByteSize;
-
-    gl.vertexAttribPointer(shader.attributes.aVertexPosition, 2, gl.FLOAT, false, stride, 0);
-    gl.vertexAttribPointer(shader.attributes.aLightColor, 4, gl.UNSIGNED_BYTE, true, stride, 2 * 4);
-    gl.vertexAttribPointer(shader.attributes.aLightPosition, 3, gl.FLOAT, false, stride, 6 * 4);
-    gl.vertexAttribPointer(shader.attributes.aLightFalloff, 3, gl.FLOAT, false, stride, 9 * 4);
-};
-
-/**
- * Destroys the SpriteBatch.
- *
- */
 LightRenderer.prototype.destroy = function ()
 {
-    this.renderer.gl.deleteBuffer(this.vertexBuffer);
-    this.renderer.gl.deleteBuffer(this.indexBuffer);
-
-    this.renderer = null;
-
-    this.vertices = null;
-    this.positions = null;
-    this.indices = null;
-
-    this.vertexBuffer = null;
-    this.indexBuffer = null;
-
-    this.lights = null;
+    
 };
 
 },{}],8:[function(require,module,exports){
@@ -589,8 +510,6 @@ function WebGLDeferredRenderer(width, height, options)
 
     this.ambientColor = options.ambientColor || this._lightAmbientColor;
     this.ambientIntensity = options.ambientIntensity || this._lightAmbientColorRgba[3];
-
-    this.lights = [];
 
     this.renderingNormals = false;
 
@@ -652,11 +571,6 @@ Object.assign(WebGLDeferredRenderer.prototype, {
         // first create our render targets.
         this.diffuseTexture = new PIXI.RenderTexture(this, this.width, this.height, null, this.resolution);
         this.normalsTexture = new PIXI.RenderTexture(this, this.width, this.height, null, this.resolution);
-
-//        this.outputRenderTarget = this.renderTarget;
-
-        // render targets bind when they get created, so we need to reset back to the default one.
-        this.renderTarget.activate();
     },
 
     render: function (object)
@@ -680,14 +594,6 @@ Object.assign(WebGLDeferredRenderer.prototype, {
 
         // composite to viewport
 //        this._composite();
-    },
-
-    _renderLights: function () {
-        
-    },
-
-    _updateLight: function () {
-        
     }
 });
 

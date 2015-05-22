@@ -11,16 +11,13 @@ function PointLightShader(shaderManager) {
     LightShader.call(this,
         shaderManager,
         // vertex shader
-        glslify(__dirname + '/point.vert'),
-        // fragment shader
-        glslify(__dirname + '/point2.frag'),
-        // custom uniforms
         null,
-        // custom attributes
+        // fragment shader
+        glslify(__dirname + '/point.frag'),
+        // custom uniforms
         {
-            aLightColor: 1,
-            aLightPosition: 2,
-            aLightFalloff: 3
+            // height of the light above the viewport
+            uLightHeight: { type: '1f', value: 0.075 }
         }
     );
 }
