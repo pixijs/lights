@@ -8,7 +8,6 @@ var glslify = require('glslify');
  */
 function LightShader(shaderManager, vertexSrc, fragmentSrc, customUniforms, customAttributes) {
     var uniforms = {
-        alpha:              { type: '1f', value: 0 },
         translationMatrix:  { type: 'mat3', value: new Float32Array(9) },
         projectionMatrix:   { type: 'mat3', value: new Float32Array(9) },
 
@@ -16,17 +15,20 @@ function LightShader(shaderManager, vertexSrc, fragmentSrc, customUniforms, cust
         uSampler:       { type: 'sampler2D', value: null },
         uNormalSampler: { type: 'sampler2D', value: null },
 
+        // should we apply the translation matrix or not.
+        uUseViewportQuad: { type: 'bool', value: true },
+
         // size of the renderer viewport
         uViewSize:      { type: '2f', value: new Float32Array(2) },
-
-        // ambient lighting color, alpha channel used for intensity
-        uAmbientColor:  { type: '4f', value: new Float32Array(4) },
 
         // light color, alpha channel used for intensity.
         uLightColor:    { type: '4f', value: new Float32Array([1, 1, 1, 1]) },
 
         // light falloff attenuation coefficients
-        uLightFalloff:  { type: '3f', value: new Float32Array([0, 0, 0]) }
+        uLightFalloff:  { type: '3f', value: new Float32Array([0, 0, 0]) },
+
+        // height of the light above the viewport
+        uLightHeight: { type: '1f', value: 0.075 }
     };
 
     if (customUniforms)
@@ -49,7 +51,7 @@ function LightShader(shaderManager, vertexSrc, fragmentSrc, customUniforms, cust
         }
     }
 
-    PIXI.Shader.call(this, shaderManager, vertexSrc || LightShader.defaultVertexSrc, fragmentSrc || LightShader.defaultFragmentSrc, uniforms, attributes);
+    PIXI.Shader.call(this, shaderManager, vertexSrc || LightShader.defaultVertexSrc, fragmentSrc, uniforms, attributes);
 }
 
 LightShader.prototype = Object.create(PIXI.Shader.prototype);
@@ -57,4 +59,3 @@ LightShader.prototype.constructor = LightShader;
 module.exports = LightShader;
 
 LightShader.defaultVertexSrc = glslify(__dirname + '/light.vert');
-LightShader.defaultFragmentSrc = glslify(__dirname + '/light.frag');

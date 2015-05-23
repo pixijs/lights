@@ -7,17 +7,29 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui" />
 
         <title>Pixi Lighting</title>
+        <style>
+            html, body { margin:0; padding: 0 }
+        </style>
     </head>
 
     <body>
-        <script src="src/pixi.js"></script>
+        <script src="//rawgit.com/mrdoob/stats.js/master/build/stats.min.js"></script>
+        <script src="node_modules/pixi.js/bin/pixi.js"></script>
         <script src="bin/pixi-lights.js"></script>
         <script>
             var renderer = new PIXI.lights.WebGLDeferredRenderer(1024, 512),
 //            var renderer = new PIXI.WebGLRenderer(1024, 512),
                 stage = new PIXI.Container(),
-                light = new PIXI.lights.PointLight();
+                light = new PIXI.lights.PointLight(0xffffff, 1),
+                lightCount = 1,
+                stats = new Stats();
 
+            // align top-left
+            stats.domElement.style.position = 'absolute';
+            stats.domElement.style.right = '0px';
+            stats.domElement.style.bottom = '0px';
+
+            document.body.appendChild(stats.domElement);
             document.body.appendChild(renderer.view);
 
             PIXI.loader
@@ -31,9 +43,6 @@
                     var block = new PIXI.Sprite(res.block_diffuse.texture);
                     var block1 = new PIXI.Sprite(res.block_diffuse.texture);
                     var block2 = new PIXI.Sprite(res.block_diffuse.texture);
-                    
-                    var light1 = new PIXI.lights.PointLight();
-                    var light2 = new PIXI.lights.PointLight();
 
                     bg.normalTexture = res.bg_normal.texture;
                     block.normalTexture = res.block_normal.texture;
@@ -43,18 +52,16 @@
                     block.position.set(100, 100);
                     block1.position.set(500, 100);
                     block2.position.set(300, 400);
-
-                    light1.position.set(50, 50);
-                    light2.position.set(950, 500);
+                    
+                    light.position.set(525, 160);
 
                     stage.addChild(bg);
                     stage.addChild(block);
                     stage.addChild(block1);
                     stage.addChild(block2);
 
+                    stage.addChild(new PIXI.lights.AmbientLight(null, 0.2));
                     stage.addChild(light);
-                    stage.addChild(light1);
-                    stage.addChild(light2);
 
                     renderer.view.addEventListener('mousemove', function (e) {
                         var rect = e.target.getBoundingClientRect();
@@ -63,13 +70,29 @@
                         light.position.y = e.clientY - rect.top;
                     });
 
+                    renderer.view.addEventListener('click', function (e) {
+                        var rect = e.target.getBoundingClientRect();
+
+                        var clickLight = new PIXI.lights.PointLight(0xffffff);
+
+                        clickLight.position.x = e.clientX - rect.left;
+                        clickLight.position.y = e.clientY - rect.top;
+
+                        stage.addChild(clickLight);
+
+                        document.getElementById('numLights').textContent = ++lightCount;
+                    });
+
                     animate();
                 });
 
             function animate() {
                 requestAnimationFrame(animate);
+                stats.begin();
                 renderer.render(stage);
+                stats.end();
             }
         </script>
+        Number of Lights: <span id="numLights">1</span>
     </body>
 </html>

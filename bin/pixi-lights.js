@@ -3,19 +3,25 @@ module.exports = PIXI.lights = {
 //    LitSprite: require('./light_1/LitSprite'),
 //    LightingRenderer: require('./light_1/webgl/LightingRenderer')
 
-    Light:                  require('./lights/Light'),
-    LightShader:            require('./lights/LightShader'),
+    Light:                  require('./lights/light/Light'),
+    LightShader:            require('./lights/light/LightShader'),
 
-    PointLight:             require('./lights/point/PointLight'),
-    PointLightShader:       require('./lights/point/PointLightShader'),
+    AmbientLight:           require('./lights/ambientLight/AmbientLight'),
+    AmbientLightShader:     require('./lights/ambientLight/AmbientLightShader'),
+
+    PointLight:             require('./lights/pointLight/PointLight'),
+    PointLightShader:       require('./lights/pointLight/PointLightShader'),
 
     LightRenderer:          require('./renderers/LightRenderer'),
-    WebGLDeferredRenderer:  require('./renderers/WebGLDeferredRenderer')
+    WebGLDeferredRenderer:  require('./renderers/WebGLDeferredRenderer'),
+
+    WireframeShader:        require('./lights/WireframeShader')
 };
 
 require('./lightSpriteMixin');
+require('./shapeMeshMixin');
 
-},{"./lightSpriteMixin":2,"./lights/Light":3,"./lights/LightShader":4,"./lights/point/PointLight":5,"./lights/point/PointLightShader":6,"./renderers/LightRenderer":7,"./renderers/WebGLDeferredRenderer":8}],2:[function(require,module,exports){
+},{"./lightSpriteMixin":2,"./lights/WireframeShader":3,"./lights/ambientLight/AmbientLight":4,"./lights/ambientLight/AmbientLightShader":5,"./lights/light/Light":6,"./lights/light/LightShader":7,"./lights/pointLight/PointLight":8,"./lights/pointLight/PointLightShader":9,"./renderers/LightRenderer":10,"./renderers/WebGLDeferredRenderer":11,"./shapeMeshMixin":12}],2:[function(require,module,exports){
 var tempTexture = null;
 
  /**
@@ -44,6 +50,116 @@ PIXI.Sprite.prototype._renderWebGL = function (renderer)
 };
 
 },{}],3:[function(require,module,exports){
+
+
+/**
+ * @class
+ * @extends PIXI.Shader
+ * @memberof PIXI.lights
+ * @param shaderManager {ShaderManager} The WebGL shader manager this shader works for.
+ */
+function WireframeShader(shaderManager) {
+    PIXI.Shader.call(this,
+        shaderManager,
+        // vertex shader
+        [
+            'precision lowp float;',
+
+            'attribute vec2 aVertexPosition;',
+
+            'uniform mat3 projectionMatrix;',
+
+            'void main(void) {',
+            '    gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);',
+            '}'
+        ].join('\n'),
+        // fragment shader
+        [
+            'void main() {',
+            '    gl_FragColor = vec4(0, 0, 0, 1);',
+            '}'
+        ].join('\n'),
+        // uniforms
+        {
+            translationMatrix:  { type: 'mat3', value: new Float32Array(9) },
+            projectionMatrix:   { type: 'mat3', value: new Float32Array(9) }
+        },
+        // attributes
+        {
+            aVertexPosition: 0
+        }
+    );
+}
+
+WireframeShader.prototype = Object.create(PIXI.Shader.prototype);
+WireframeShader.prototype.constructor = WireframeShader;
+module.exports = WireframeShader;
+
+PIXI.ShaderManager.registerPlugin('wireframeShader', WireframeShader);
+
+},{}],4:[function(require,module,exports){
+var Light = require('../light/Light');
+
+/**
+ * @class
+ * @extends PIXI.lights.Light
+ * @memberof PIXI.lights
+ *
+ * @param [color=0xFFFFFF] {number} The color of the light.
+ * @param [brightness=0.5] {number} The brightness of the light.
+ */
+function AmbientLight(color, brightness) {
+    // ambient light is drawn using a full-screen quad
+    Light.call(this, color, brightness);
+
+    this.shaderName = 'ambientLightShader';
+}
+
+AmbientLight.prototype = Object.create(Light.prototype);
+AmbientLight.prototype.constructor = AmbientLight;
+module.exports = AmbientLight;
+
+AmbientLight.prototype.renderWebGL = function (renderer)
+{
+    // add lights to their renderer on the normals pass
+    if (!renderer.renderingNormals) {
+        return;
+    }
+
+    // I actually don't want to interrupt the current batch, so don't set light as the current object renderer.
+    // Light renderer works a bit differently in that lights are draw individually on flush (called by WebGLDeferredRenderer).
+    //renderer.setObjectRenderer(renderer.plugins.lights);
+
+    renderer.plugins.lights.render(this);
+};
+
+},{"../light/Light":6}],5:[function(require,module,exports){
+var LightShader = require('../light/LightShader');
+
+
+/**
+ * @class
+ * @extends PIXI.Shader
+ * @memberof PIXI.lights
+ * @param shaderManager {ShaderManager} The WebGL shader manager this shader works for.
+ */
+function AmbientLightShader(shaderManager) {
+    LightShader.call(this,
+        shaderManager,
+        // vertex shader
+        null,
+        // fragment shader
+        "#define GLSLIFY 1\n\nprecision lowp float;\r\n\r\nuniform sampler2D uSampler;\r\nuniform sampler2D uNormalSampler;\r\n\r\nuniform mat3 translationMatrix;\r\n\r\nuniform vec2 uViewSize;\r\n\r\nuniform vec4 uAmbientColor; // ambient color, alpha channel used for intensity.\r\n\r\nuniform vec4 uLightColor;   // light color, alpha channel used for intensity.\r\nuniform vec3 uLightFalloff; // light attenuation coefficients (constant, linear, quadratic)\r\nuniform float uLightHeight; // light height above the viewport\r\n\n\r\nvoid main(void)\r\n{\r\nvec2 texCoord = gl_FragCoord.xy / uViewSize;\r\ntexCoord.y = 1.0 - texCoord.y; // FBOs are flipped.\r\n\r\nvec4 diffuseColor = texture2D(uSampler, texCoord);\r\nvec4 normalColor = texture2D(uNormalSampler, texCoord);\r\n\r\n// if no normal color here, just discard\r\nif (normalColor.a == 0.0) discard;\r\n\n\r\n    // simplified lambert shading that makes assumptions for ambient color\r\n\r\n    // compute Distance\r\n//    float D = length(lightVector);\r\n    float D = 1.0;\r\n    \r\n    // normalize vectors\r\n    vec3 N = normalize(normalColor.xyz * 2.0 - 1.0);\r\n//    vec3 L = normalize(lightVector);\r\n    vec3 L = vec3(1.0, 1.0, 1.0);\r\n    \r\n    // pre-multiply light color with intensity\r\n    // then perform \"N dot L\" to determine our diffuse\r\n    vec3 diffuse = (uLightColor.rgb * uLightColor.a) * max(dot(N, L), 0.0);\r\n    \r\n    // pre-multiply ambient color with intensity\r\n//    vec3 ambient = uAmbientColor.rgb * uAmbientColor.a;\r\n    \r\n    // calculate attenuation\r\n//    float attenuation = 1.0 / (uLightFalloff.x + (uLightFalloff.y * D) + (uLightFalloff.z * D * D));\r\n    \r\n    // calculate final intesity and color, then combine\r\n//    vec3 intensity = ambient + diffuse * attenuation;\r\n//    vec3 finalColor = diffuseColor.rgb * intensity;\r\n    vec3 finalColor = diffuseColor.rgb * diffuse;\r\n\r\n    // calculate just ambient light color, most lights will override this frag\r\n//    vec3 ambientColor = uLightColor.rgb * uLightColor.a;\r\n//    gl_FragColor = vec4(diffuseColor.rgb * ambientColor, diffuseColor.a);\r\n    gl_FragColor = vec4(finalColor, diffuseColor.a);\r\n}\r\n"
+    );
+}
+
+AmbientLightShader.prototype = Object.create(LightShader.prototype);
+AmbientLightShader.prototype.constructor = AmbientLightShader;
+module.exports = AmbientLightShader;
+
+PIXI.ShaderManager.registerPlugin('ambientLightShader', AmbientLightShader);
+
+},{"../light/LightShader":7}],6:[function(require,module,exports){
 /**
  * Excuse the mess, haven't cleaned this up yet!
  */
@@ -56,12 +172,13 @@ PIXI.Sprite.prototype._renderWebGL = function (renderer)
  * @memberof PIXI.lights
  *
  * @param [color=0xFFFFFF] {number} The color of the light.
+ * @param [brightness=1] {number} The brightness of the light, in range [0, 1].
  */
-function Light(color, vertices, indices) {
+function Light(color, brightness, vertices, indices) {
     if (this.constructor === Light) {
-        throw new Error('Light is an abstract base and should not be created directly!');
+        throw new Error('Light is an abstract base class, it should not be created directly!');
     }
-
+    
     PIXI.DisplayObject.call(this);
 
     /**
@@ -69,17 +186,14 @@ function Light(color, vertices, indices) {
      *
      * @member {Float32Array}
      */
-    this.vertices = vertices || new Float32Array([0,   0,
-                                                  1024, 0,
-                                                  1024, 512,
-                                                  0,   512]);
+    this.vertices = vertices || new Float32Array(8);
 
     /**
      * An array containing the indices of the vertices
      *
      * @member {Uint16Array}
      */
-    this.indices = new Uint16Array([0,1,2, 0,2,3]);
+    this.indices = indices || new Uint16Array([0,1,2, 0,2,3]);
 
     /**
      * The blend mode to be applied to the light.
@@ -89,28 +203,66 @@ function Light(color, vertices, indices) {
      */
     this.blendMode = PIXI.BLEND_MODES.ADD;
 
+    /**
+     * The draw mode to be applied to the light geometry.
+     *
+     * @member {number}
+     * @default CONST.DRAW_MODES.TRIANGLES;
+     */
+    this.drawMode = PIXI.DRAW_MODES.TRIANGLES;
+
+    /**
+     * When set, the renderer will reupload the geometry data.
+     * 
+     * @member {boolean}
+     */
+    this.needsUpdate = true;
+
+    /**
+     * The height of the light from the viewport.
+     *
+     * @member {number}
+     * @default 0.075
+     */
+    this.height = 0.075;
+
+    /**
+     * The falloff attenuation coeficients.
+     *
+     * @member {number[]}
+     * @default [0.75, 3, 20]
+     */
+    this.falloff = [0.75, 3, 20];
+
+    /**
+     * The name of the shader plugin to use.
+     *
+     * @member {string}
+     */
+    this.shaderName = null;
+
+    /**
+     * By default the light uses a viewport sized quad as the mesh.
+     */
+    this.useViewportQuad = true;
+
+    // webgl buffers
     this._vertexBuffer = null;
     this._indexBuffer = null;
 
-    this.needsUpdate = true;
+    // color and brightness are exposed through setters
+    this._color = 0x4d4d59;
+    this._colorRgba = [0.3, 0.3, 0.35, 0.8];
 
-    // light stuff...
-
-    this._color = 0xFFFFFF;
-    this._colorRgba = [1, 1, 1, 1];
-
+    // run the color setter
     if (color || color === 0) {
         this.color = color;
     }
-
-    this.height = 0.075;
-
-    this.falloff = [0.2, 5, 20];
-
-    // hack around bug in interaction manager. It dies when processing raw DOs
-//    this.children = [];
-
-    this.shaderName = null;
+    
+    // run the brightness setter
+    if (brightness || brightness === 0) {
+        this.brightness = brightness;
+    }
 }
 
 Light.prototype = Object.create(PIXI.DisplayObject.prototype);
@@ -119,7 +271,7 @@ module.exports = Light;
 
 Object.defineProperties(Light.prototype, {
     /**
-     * The color of lighting
+     * The color of the lighting.
      *
      * @member {number}
      * @memberof Light#
@@ -134,27 +286,40 @@ Object.defineProperties(Light.prototype, {
             this._color = val;
             PIXI.utils.hex2rgb(val, this._colorRgba);
         }
+    },
+
+    /**
+     * The brightness of this lighting. Normalized in the range [0, 1].
+     *
+     * @member {number}
+     * @memberof Light#
+     */
+    brightness: {
+        get: function ()
+        {
+            return this._colorRgba[3];
+        },
+        set: function (val)
+        {
+            this._colorRgba[3] = val;
+        }
     }
 });
 
-/**
- * Renders the object using the WebGL renderer
- *
- * @param renderer {WebGLRenderer}
- * @private
- */
-//Light.prototype.renderWebGL = function (renderer)
-//{
-//    // I actually don't want to interrupt the current batch, so don't set light as the current object renderer.
-//    // light renderer works a bit differently in that ALL lights are in a single batch no matter what.
-//
-//    // renderer.setObjectRenderer(renderer.plugins.lights);
-//
-////    if (renderer.renderingNormals) {
-////        renderer.plugins.lights.render(this);
-//        renderer.lights.push(this);
-////    }
-//};
+Light.prototype.syncShader = function (shader) {
+    shader.uniforms.uUseViewportQuad.value = this.useViewportQuad;
+
+    shader.uniforms.uLightColor.value[0] = this._colorRgba[0];
+    shader.uniforms.uLightColor.value[1] = this._colorRgba[1];
+    shader.uniforms.uLightColor.value[2] = this._colorRgba[2];
+    shader.uniforms.uLightColor.value[3] = this._colorRgba[3];
+
+    shader.uniforms.uLightHeight.value = this.height;
+
+    shader.uniforms.uLightFalloff.value[0] = this.falloff[0];
+    shader.uniforms.uLightFalloff.value[1] = this.falloff[1];
+    shader.uniforms.uLightFalloff.value[2] = this.falloff[2];
+};
 
 Light.prototype.renderWebGL = function (renderer)
 {
@@ -163,7 +328,10 @@ Light.prototype.renderWebGL = function (renderer)
         return;
     }
 
-//    renderer.setObjectRenderer(renderer.plugins.lights);
+    // I actually don't want to interrupt the current batch, so don't set light as the current object renderer.
+    // Light renderer works a bit differently in that lights are draw individually on flush (called by WebGLDeferredRenderer).
+    //renderer.setObjectRenderer(renderer.plugins.lights);
+
     renderer.plugins.lights.render(this);
 };
 
@@ -172,9 +340,13 @@ Light.prototype.destroy = function ()
     PIXI.DisplayObject.prototype.destroy.call(this);
 
     // TODO: Destroy buffers!
-}
+};
 
-},{}],4:[function(require,module,exports){
+Light.DRAW_MODES = {
+    
+};
+
+},{}],7:[function(require,module,exports){
 
 
 /**
@@ -185,7 +357,6 @@ Light.prototype.destroy = function ()
  */
 function LightShader(shaderManager, vertexSrc, fragmentSrc, customUniforms, customAttributes) {
     var uniforms = {
-        alpha:              { type: '1f', value: 0 },
         translationMatrix:  { type: 'mat3', value: new Float32Array(9) },
         projectionMatrix:   { type: 'mat3', value: new Float32Array(9) },
 
@@ -193,17 +364,20 @@ function LightShader(shaderManager, vertexSrc, fragmentSrc, customUniforms, cust
         uSampler:       { type: 'sampler2D', value: null },
         uNormalSampler: { type: 'sampler2D', value: null },
 
+        // should we apply the translation matrix or not.
+        uUseViewportQuad: { type: 'bool', value: true },
+
         // size of the renderer viewport
         uViewSize:      { type: '2f', value: new Float32Array(2) },
-
-        // ambient lighting color, alpha channel used for intensity
-        uAmbientColor:  { type: '4f', value: new Float32Array(4) },
 
         // light color, alpha channel used for intensity.
         uLightColor:    { type: '4f', value: new Float32Array([1, 1, 1, 1]) },
 
         // light falloff attenuation coefficients
-        uLightFalloff:  { type: '3f', value: new Float32Array([0, 0, 0]) }
+        uLightFalloff:  { type: '3f', value: new Float32Array([0, 0, 0]) },
+
+        // height of the light above the viewport
+        uLightHeight: { type: '1f', value: 0.075 }
     };
 
     if (customUniforms)
@@ -226,18 +400,17 @@ function LightShader(shaderManager, vertexSrc, fragmentSrc, customUniforms, cust
         }
     }
 
-    PIXI.Shader.call(this, shaderManager, vertexSrc || LightShader.defaultVertexSrc, fragmentSrc || LightShader.defaultFragmentSrc, uniforms, attributes);
+    PIXI.Shader.call(this, shaderManager, vertexSrc || LightShader.defaultVertexSrc, fragmentSrc, uniforms, attributes);
 }
 
 LightShader.prototype = Object.create(PIXI.Shader.prototype);
 LightShader.prototype.constructor = LightShader;
 module.exports = LightShader;
 
-LightShader.defaultVertexSrc = "#define GLSLIFY 1\n\nprecision lowp float;\r\n\r\nattribute vec2 aVertexPosition;\r\n\r\nuniform mat3 translationMatrix;\r\nuniform mat3 projectionMatrix;\r\n\r\nvoid main(void) {\r\n    gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\r\n}\r\n";
-LightShader.defaultFragmentSrc = "#define GLSLIFY 1\n\nprecision lowp float;\r\n\r\nuniform sampler2D uSampler;\r\nuniform sampler2D uNormalSampler;\r\n\r\nuniform mat3 translationMatrix;\r\n\r\nuniform float alpha;\r\n\r\nuniform vec2 uViewSize;\r\n\r\nuniform vec4 uAmbientColor; // ambient color, alpha channel used for intensity.\r\n\r\nuniform vec2 uLightPosition;// light position, normalized to viewport.\r\nuniform vec4 uLightColor;   // light color, alpha channel used for intensity.\r\nuniform vec3 uLightFalloff; // light falloff attenuation coefficients.\r\n\n\r\nvoid main(void){\r\nvec2 texCoord = gl_FragCoord.xy / uViewSize;\r\ntexCoord.y = 1.0 - texCoord.y; // FBOs are flipped.\r\n\r\nvec4 diffuseColor = texture2D(uSampler, texCoord);\r\nvec4 normalColor = texture2D(uNormalSampler, texCoord);\r\n\r\n// if no normal color here, just discard\r\nif (normalColor.a == 0.0) discard;\r\n\n\r\n    // this shader should always be overriden by a specific light type...\r\n    gl_FragColor = vec4(mix(diffuseColor.rgb, normalColor.rgb, 0.5), diffuseColor.a);\r\n}\r\n";
+LightShader.defaultVertexSrc = "#define GLSLIFY 1\n\nprecision lowp float;\r\n\r\nattribute vec2 aVertexPosition;\r\n\r\nuniform bool uUseViewportQuad;\r\nuniform mat3 translationMatrix;\r\nuniform mat3 projectionMatrix;\r\n\r\nvoid main(void) {\r\n    if (uUseViewportQuad) {\r\n        gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\r\n    }\r\n    else\r\n    {\r\n        gl_Position = vec4((projectionMatrix * translationMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\r\n    }\r\n}\r\n";
 
-},{}],5:[function(require,module,exports){
-var Light = require('../Light');
+},{}],8:[function(require,module,exports){
+var Light = require('../light/Light');
 
 /**
  * @class
@@ -245,13 +418,30 @@ var Light = require('../Light');
  * @memberof PIXI.lights
  *
  * @param [color=0xFFFFFF] {number} The color of the light.
- * @param [intensity=1] {number} The intensity of the light.
- * @param [distance=0] {number} The distance the light reaches.
- * @param [decay=1] {number} The decay factor of the light. Physically correct lights should be 2.
+ * @param [brightness=1] {number} The intensity of the light.
+ * @param [radius=Infinity] {number} The distance the light reaches. You will likely need
+ *  to change the falloff of the light as well if you change this value. Infinity will
+ *  use the entire viewport as the drawing surface.
  */
-function PointLight(color, intensity, distance, decay) {
-    Light.call(this, color);
+function PointLight(color, brightness, radius) {
+    radius = radius || Infinity;
 
+    if (radius !== Infinity) {
+        var shape = new PIXI.math.Circle(0, 0, radius),
+            mesh = shape.getMesh();
+
+        Light.call(this, color, brightness, mesh.vertices, mesh.indices);
+
+        this.useViewportQuad = false;
+        this.drawMode = PIXI.DRAW_MODES.TRIANGLE_FAN;
+    }
+    else {
+        Light.call(this, color, brightness);
+    }
+
+    this._syncShader = Light.prototype.syncShader;
+
+    this.radius = radius;
     this.shaderName = 'pointLightShader';
 }
 
@@ -259,8 +449,14 @@ PointLight.prototype = Object.create(Light.prototype);
 PointLight.prototype.constructor = PointLight;
 module.exports = PointLight;
 
-},{"../Light":3}],6:[function(require,module,exports){
-var LightShader = require('../LightShader');
+PointLight.prototype.syncShader = function (shader) {
+    this._syncShader(shader);
+
+    shader.uniforms.uLightRadius.value = this.radius;
+}
+
+},{"../light/Light":6}],9:[function(require,module,exports){
+var LightShader = require('../light/LightShader');
 
 
 /**
@@ -275,11 +471,11 @@ function PointLightShader(shaderManager) {
         // vertex shader
         null,
         // fragment shader
-        "#define GLSLIFY 1\n\nprecision lowp float;\r\n\r\n// imports the common uniforms like samplers, and ambient color\r\nuniform sampler2D uSampler;\r\nuniform sampler2D uNormalSampler;\r\n\r\nuniform mat3 translationMatrix;\r\n\r\nuniform float alpha;\r\n\r\nuniform vec2 uViewSize;\r\n\r\nuniform vec4 uAmbientColor; // ambient color, alpha channel used for intensity.\r\n\r\nuniform vec2 uLightPosition;// light position, normalized to viewport.\r\nuniform vec4 uLightColor;   // light color, alpha channel used for intensity.\r\nuniform vec3 uLightFalloff; // light falloff attenuation coefficients.\r\n\n\r\nuniform float uLightHeight;\r\n\r\nvoid main()\r\n{\r\n// sets diffuseColor and normalColor from their respective textures\r\nvec2 texCoord = gl_FragCoord.xy / uViewSize;\r\ntexCoord.y = 1.0 - texCoord.y; // FBOs are flipped.\r\n\r\nvec4 diffuseColor = texture2D(uSampler, texCoord);\r\nvec4 normalColor = texture2D(uNormalSampler, texCoord);\r\n\r\n// if no normal color here, just discard\r\nif (normalColor.a == 0.0) discard;\r\n\n\r\n    vec2 lightPosition = translationMatrix[2].xy / uViewSize;\r\n\r\n    // the directional vector of the light\r\n    vec3 lightVector = vec3(lightPosition - texCoord, uLightHeight);\r\n\r\n    // correct for aspect ratio\r\n    lightVector.x *= uViewSize.x / uViewSize.y;\r\n\r\n// does lambertian illumination calculations and sets \"finalColor\"\r\n// compute Distance\r\nfloat D = length(lightVector);\r\n\r\n// normalize vectors\r\nvec3 N = normalize(normalColor.xyz * 2.0 - 1.0);\r\nvec3 L = normalize(lightVector);\r\n\r\n// pre-multiply light color with intensity\r\n// then perform \"N dot L\" to determine our diffuse\r\nvec3 diffuse = (uLightColor.rgb * uLightColor.a) * max(dot(N, L), 0.0);\r\n\r\n// pre-multiply ambient color with intensity\r\nvec3 ambient = uAmbientColor.rgb * uAmbientColor.a;\r\n\r\n// calculate attenuation\r\nfloat attenuation = 1.0 / (uLightFalloff.x + (uLightFalloff.y * D) + (uLightFalloff.z * D * D));\r\n\r\n// calculate final intesity and color, then combine\r\nvec3 intensity = ambient + diffuse * attenuation;\r\nvec3 finalColor = diffuseColor.rgb * intensity;\r\n\n\r\n    gl_FragColor = vec4(finalColor, diffuseColor.a);\r\n}",
+        "#define GLSLIFY 1\n\nprecision lowp float;\r\n\r\n// imports the common uniforms like samplers, and ambient color\r\nuniform sampler2D uSampler;\r\nuniform sampler2D uNormalSampler;\r\n\r\nuniform mat3 translationMatrix;\r\n\r\nuniform vec2 uViewSize;\r\n\r\nuniform vec4 uAmbientColor; // ambient color, alpha channel used for intensity.\r\n\r\nuniform vec4 uLightColor;   // light color, alpha channel used for intensity.\r\nuniform vec3 uLightFalloff; // light attenuation coefficients (constant, linear, quadratic)\r\nuniform float uLightHeight; // light height above the viewport\r\n\n\r\nuniform float uLightRadius;\r\n\r\nvoid main()\r\n{\r\n    vec2 texCoord = gl_FragCoord.xy / uViewSize;\r\n    texCoord.y = 1.0 - texCoord.y; // FBOs positions are flipped.\r\n\r\n    vec4 normalColor = texture2D(uNormalSampler, texCoord);\r\n    normalColor.g = 1.0 - normalColor.g; // Green layer is flipped Y coords.\r\n\r\n    // bail out early when normal has no data\r\n    if (normalColor.a == 0.0) discard;\r\n\r\n    vec2 lightPosition = translationMatrix[2].xy / uViewSize;\r\n\r\n    // the directional vector of the light\r\n    vec3 lightVector = vec3(lightPosition - texCoord, uLightHeight);\r\n\r\n    // correct for aspect ratio\r\n    lightVector.x *= uViewSize.x / uViewSize.y;\r\n\r\n    // compute Distance\r\n    float D = length(lightVector);\r\n\r\n    // bail out early when pixel outside of light sphere\r\n    if (D > uLightRadius) discard;\r\n\r\n    // normalize vectors\r\n    vec3 N = normalize(normalColor.xyz * 2.0 - 1.0);\r\n    vec3 L = normalize(lightVector);\r\n    \r\n    // pre-multiply light color with intensity\r\n    // then perform \"N dot L\" to determine our diffuse\r\n    vec3 diffuse = (uLightColor.rgb * uLightColor.a) * max(dot(N, L), 0.0);\r\n\r\n    // calculate attenuation\r\n    float attenuation = 1.0 / (uLightFalloff.x + (uLightFalloff.y * D) + (uLightFalloff.z * D * D));\r\n    \r\n    // calculate final intesity and color, then combine\r\n    vec3 intensity = diffuse * attenuation;\r\n    vec4 diffuseColor = texture2D(uSampler, texCoord);\r\n    vec3 finalColor = diffuseColor.rgb * intensity;\r\n\r\n    gl_FragColor = vec4(finalColor, diffuseColor.a);\r\n}",
         // custom uniforms
         {
             // height of the light above the viewport
-            uLightHeight: { type: '1f', value: 0.075 }
+            uLightRadius:   { type: '1f', value: 1 }
         }
     );
 }
@@ -290,7 +486,7 @@ module.exports = PointLightShader;
 
 PIXI.ShaderManager.registerPlugin('pointLightShader', PointLightShader);
 
-},{"../LightShader":4}],7:[function(require,module,exports){
+},{"../light/LightShader":7}],10:[function(require,module,exports){
 /**
  *
  * @class
@@ -384,27 +580,19 @@ LightRenderer.prototype.flush = function ()
         renderer.blendModeManager.setBlendMode(light.blendMode);
 
         // set uniforms, can do some optimizations here.
-        light.worldTransform.toArray(true, shader.uniforms.translationMatrix.value);
-        renderer.currentRenderTarget.projectionMatrix.toArray(true, shader.uniforms.projectionMatrix.value);
-
-        shader.uniforms.alpha.value = light.worldAlpha;
-
         shader.uniforms.uViewSize.value[0] = renderer.width;
         shader.uniforms.uViewSize.value[1] = renderer.height;
 
-        shader.uniforms.uAmbientColor.value[0] = renderer._lightAmbientColorRgba[0];
-        shader.uniforms.uAmbientColor.value[1] = renderer._lightAmbientColorRgba[1];
-        shader.uniforms.uAmbientColor.value[2] = renderer._lightAmbientColorRgba[2];
-        shader.uniforms.uAmbientColor.value[3] = renderer._lightAmbientColorRgba[3];
+        light.worldTransform.toArray(true, shader.uniforms.translationMatrix.value);
+        renderer.currentRenderTarget.projectionMatrix.toArray(true, shader.uniforms.projectionMatrix.value);
 
-        shader.uniforms.uLightColor.value[0] = light._colorRgba[0];
-        shader.uniforms.uLightColor.value[1] = light._colorRgba[1];
-        shader.uniforms.uLightColor.value[2] = light._colorRgba[2];
-        shader.uniforms.uLightColor.value[3] = light._colorRgba[3];
+        if (light.useViewportQuad) {
+            // update verts to ensure it is a fullscreen quad even if the renderer is resized. This should be optimized
+            light.vertices[2] = light.vertices[4] = renderer.width;
+            light.vertices[5] = light.vertices[7] = renderer.height;
+        }
 
-        shader.uniforms.uLightFalloff.value[0] = light.falloff[0];
-        shader.uniforms.uLightFalloff.value[1] = light.falloff[1];
-        shader.uniforms.uLightFalloff.value[2] = light.falloff[2];
+        light.syncShader(shader);
 
         shader.syncUniforms();
 
@@ -453,7 +641,7 @@ LightRenderer.prototype.flush = function ()
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, light.indices, gl.STATIC_DRAW);
         }
 
-        gl.drawElements(gl.TRIANGLES, light.indices.length, gl.UNSIGNED_SHORT, 0);
+        gl.drawElements(renderer.drawModes[light.drawMode], light.indices.length, gl.UNSIGNED_SHORT, 0);
     }
 
     this.currentBatchSize = 0;
@@ -484,7 +672,7 @@ LightRenderer.prototype.destroy = function ()
     
 };
 
-},{}],8:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 /**
  * The WebGLDeferredRenderer draws the scene and all its content onto a webGL enabled canvas. This renderer
  * should be used for browsers that support webGL. This Render works by automatically managing webGLBatchs.
@@ -512,12 +700,6 @@ function WebGLDeferredRenderer(width, height, options)
 {
     options = options || {};
 
-    this._lightAmbientColor = 0x000000;
-    this._lightAmbientColorRgba = [0, 0, 0, 0];
-
-    this.ambientColor = options.ambientColor || this._lightAmbientColor;
-    this.ambientIntensity = options.ambientIntensity || this._lightAmbientColorRgba[3];
-
     this.renderingNormals = false;
 
     PIXI.WebGLRenderer.call(this, width, height, options);
@@ -526,42 +708,6 @@ function WebGLDeferredRenderer(width, height, options)
 WebGLDeferredRenderer.prototype = Object.create(PIXI.WebGLRenderer.prototype);
 WebGLDeferredRenderer.prototype.constructor = WebGLDeferredRenderer;
 module.exports = WebGLDeferredRenderer;
-
-Object.defineProperties(WebGLDeferredRenderer.prototype, {
-    /**
-     * The color of ambient lighting
-     *
-     * @member {number}
-     * @memberof WebGLDeferredRenderer#
-     */
-    ambientColor: {
-        get: function ()
-        {
-            return this._lightAmbientColor;
-        },
-        set: function (val)
-        {
-            this._lightAmbientColor = val;
-            PIXI.utils.hex2rgb(val, this._lightAmbientColorRgba);
-        }
-    },
-    /**
-     * The intensity of ambient lighting
-     *
-     * @member {number}
-     * @memberof WebGLDeferredRenderer#
-     */
-    ambientIntensity: {
-        get: function ()
-        {
-            return this._lightAmbientColorRgba[3];
-        },
-        set: function (val)
-        {
-            this._lightAmbientColorRgba[3] = val;
-        }
-    }
-});
 
 /** @lends PIXI.DisplayObject# */
 Object.assign(WebGLDeferredRenderer.prototype, {
@@ -594,6 +740,47 @@ Object.assign(WebGLDeferredRenderer.prototype, {
         this.plugins.lights.flush();
     }
 });
+
+},{}],12:[function(require,module,exports){
+/**
+ * Creates vertices and indices arrays to describe this circle.
+ * 
+ * @param [totalSegments=40] {number} Total segments to build for the circle mesh.
+ * @param [verticesOutput] {Float32Array} An array to output the vertices into. Length must be
+ *  `((totalSegments + 2) * 2)` or more. If not passed it is created for you.
+ * @param [indicesOutput] {Uint16Array} An array to output the indices into, in gl.TRIANGLE_FAN format. Length must
+ *  be `(totalSegments + 3)` or more. If not passed it is created for you.
+ */
+PIXI.math.Circle.prototype.getMesh = function (totalSegments, vertices, indices)
+{
+    totalSegments = totalSegments || 40;
+
+    vertices = vertices || new Float32Array((totalSegments + 1) * 2);
+    indices = indices || new Uint16Array(totalSegments + 1);
+
+    var seg = (Math.PI * 2) / totalSegments,
+        indicesIndex = -1;
+
+    indices[++indicesIndex] = indicesIndex;
+
+    for (var i = 0; i <= totalSegments; ++i)
+    {
+        var index = i*2;
+        var angle = seg * i;
+
+        vertices[index] = Math.cos(angle) * this.radius;
+        vertices[index+1] = Math.sin(angle) * this.radius;
+
+        indices[++indicesIndex] = indicesIndex;
+    }
+
+    indices[indicesIndex] = 1;
+
+    return {
+        vertices: vertices,
+        indices: indices
+    };
+};
 
 },{}]},{},[1])
 

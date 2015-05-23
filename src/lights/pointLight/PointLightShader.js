@@ -1,4 +1,4 @@
-var LightShader = require('../LightShader');
+var LightShader = require('../light/LightShader');
 var glslify = require('glslify');
 
 /**
@@ -17,7 +17,7 @@ function PointLightShader(shaderManager) {
         // custom uniforms
         {
             // height of the light above the viewport
-            uLightHeight: { type: '1f', value: 0.075 }
+            uLightRadius:   { type: '1f', value: 1 }
         }
     );
 }

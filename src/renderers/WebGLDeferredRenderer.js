@@ -25,12 +25,6 @@ function WebGLDeferredRenderer(width, height, options)
 {
     options = options || {};
 
-    this._lightAmbientColor = 0x000000;
-    this._lightAmbientColorRgba = [0, 0, 0, 0];
-
-    this.ambientColor = options.ambientColor || this._lightAmbientColor;
-    this.ambientIntensity = options.ambientIntensity || this._lightAmbientColorRgba[3];
-
     this.renderingNormals = false;
 
     PIXI.WebGLRenderer.call(this, width, height, options);
@@ -39,42 +33,6 @@ function WebGLDeferredRenderer(width, height, options)
 WebGLDeferredRenderer.prototype = Object.create(PIXI.WebGLRenderer.prototype);
 WebGLDeferredRenderer.prototype.constructor = WebGLDeferredRenderer;
 module.exports = WebGLDeferredRenderer;
-
-Object.defineProperties(WebGLDeferredRenderer.prototype, {
-    /**
-     * The color of ambient lighting
-     *
-     * @member {number}
-     * @memberof WebGLDeferredRenderer#
-     */
-    ambientColor: {
-        get: function ()
-        {
-            return this._lightAmbientColor;
-        },
-        set: function (val)
-        {
-            this._lightAmbientColor = val;
-            PIXI.utils.hex2rgb(val, this._lightAmbientColorRgba);
-        }
-    },
-    /**
-     * The intensity of ambient lighting
-     *
-     * @member {number}
-     * @memberof WebGLDeferredRenderer#
-     */
-    ambientIntensity: {
-        get: function ()
-        {
-            return this._lightAmbientColorRgba[3];
-        },
-        set: function (val)
-        {
-            this._lightAmbientColorRgba[3] = val;
-        }
-    }
-});
 
 /** @lends PIXI.DisplayObject# */
 Object.assign(WebGLDeferredRenderer.prototype, {

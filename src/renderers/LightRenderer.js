@@ -91,27 +91,19 @@ LightRenderer.prototype.flush = function ()
         renderer.blendModeManager.setBlendMode(light.blendMode);
 
         // set uniforms, can do some optimizations here.
-        light.worldTransform.toArray(true, shader.uniforms.translationMatrix.value);
-        renderer.currentRenderTarget.projectionMatrix.toArray(true, shader.uniforms.projectionMatrix.value);
-
-        shader.uniforms.alpha.value = light.worldAlpha;
-
         shader.uniforms.uViewSize.value[0] = renderer.width;
         shader.uniforms.uViewSize.value[1] = renderer.height;
 
-        shader.uniforms.uAmbientColor.value[0] = renderer._lightAmbientColorRgba[0];
-        shader.uniforms.uAmbientColor.value[1] = renderer._lightAmbientColorRgba[1];
-        shader.uniforms.uAmbientColor.value[2] = renderer._lightAmbientColorRgba[2];
-        shader.uniforms.uAmbientColor.value[3] = renderer._lightAmbientColorRgba[3];
+        light.worldTransform.toArray(true, shader.uniforms.translationMatrix.value);
+        renderer.currentRenderTarget.projectionMatrix.toArray(true, shader.uniforms.projectionMatrix.value);
 
-        shader.uniforms.uLightColor.value[0] = light._colorRgba[0];
-        shader.uniforms.uLightColor.value[1] = light._colorRgba[1];
-        shader.uniforms.uLightColor.value[2] = light._colorRgba[2];
-        shader.uniforms.uLightColor.value[3] = light._colorRgba[3];
+        if (light.useViewportQuad) {
+            // update verts to ensure it is a fullscreen quad even if the renderer is resized. This should be optimized
+            light.vertices[2] = light.vertices[4] = renderer.width;
+            light.vertices[5] = light.vertices[7] = renderer.height;
+        }
 
-        shader.uniforms.uLightFalloff.value[0] = light.falloff[0];
-        shader.uniforms.uLightFalloff.value[1] = light.falloff[1];
-        shader.uniforms.uLightFalloff.value[2] = light.falloff[2];
+        light.syncShader(shader);
 
         shader.syncUniforms();
 
@@ -160,7 +152,7 @@ LightRenderer.prototype.flush = function ()
             gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, light.indices, gl.STATIC_DRAW);
         }
 
-        gl.drawElements(gl.TRIANGLES, light.indices.length, gl.UNSIGNED_SHORT, 0);
+        gl.drawElements(renderer.drawModes[light.drawMode], light.indices.length, gl.UNSIGNED_SHORT, 0);
     }
 
     this.currentBatchSize = 0;

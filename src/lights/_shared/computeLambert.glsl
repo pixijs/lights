@@ -10,11 +10,11 @@ vec3 L = normalize(lightVector);
 vec3 diffuse = (uLightColor.rgb * uLightColor.a) * max(dot(N, L), 0.0);
 
 // pre-multiply ambient color with intensity
-vec3 ambient = uAmbientColor.rgb * uAmbientColor.a;
+//vec3 ambient = uAmbientColor.rgb * uAmbientColor.a;
 
 // calculate attenuation
 float attenuation = 1.0 / (uLightFalloff.x + (uLightFalloff.y * D) + (uLightFalloff.z * D * D));
 
 // calculate final intesity and color, then combine
-vec3 intensity = ambient + diffuse * attenuation;
+vec3 intensity = /*ambient +*/ diffuse * attenuation;
 vec3 finalColor = diffuseColor.rgb * intensity;
