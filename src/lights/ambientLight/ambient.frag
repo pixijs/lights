@@ -4,14 +4,8 @@ precision lowp float;
 
 void main(void)
 {
-    vec2 texCoord = gl_FragCoord.xy / uViewSize;
-    texCoord.y = 1.0 - texCoord.y; // FBOs positions are flipped.
-
-    vec4 normalColor = texture2D(uNormalSampler, texCoord);
-    normalColor.g = 1.0 - normalColor.g; // Green layer is flipped Y coords.
-
-    // bail out early when normal has no data
-    if (normalColor.a == 0.0) discard;
+#pragma glslify: import("../_shared/computeVertexPosition.glsl");
+#pragma glslify: import("../_shared/loadNormals.glsl");
 
     // simplified lambert shading that makes assumptions for ambient color
 
