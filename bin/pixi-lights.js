@@ -12,6 +12,9 @@ module.exports = PIXI.lights = {
     PointLight:             require('./lights/pointLight/PointLight'),
     PointLightShader:       require('./lights/pointLight/PointLightShader'),
 
+    DirectionalLight:             require('./lights/directionalLight/DirectionalLight'),
+    DirectionalLightShader:       require('./lights/directionalLight/DirectionalLightShader'),
+
     LightRenderer:          require('./renderers/LightRenderer'),
     WebGLDeferredRenderer:  require('./renderers/WebGLDeferredRenderer'),
 
@@ -21,7 +24,7 @@ module.exports = PIXI.lights = {
 require('./lightSpriteMixin');
 require('./shapeMeshMixin');
 
-},{"./lightSpriteMixin":2,"./lights/WireframeShader":3,"./lights/ambientLight/AmbientLight":4,"./lights/ambientLight/AmbientLightShader":5,"./lights/light/Light":6,"./lights/light/LightShader":7,"./lights/pointLight/PointLight":8,"./lights/pointLight/PointLightShader":9,"./renderers/LightRenderer":10,"./renderers/WebGLDeferredRenderer":11,"./shapeMeshMixin":12}],2:[function(require,module,exports){
+},{"./lightSpriteMixin":2,"./lights/WireframeShader":3,"./lights/ambientLight/AmbientLight":4,"./lights/ambientLight/AmbientLightShader":5,"./lights/directionalLight/DirectionalLight":6,"./lights/directionalLight/DirectionalLightShader":7,"./lights/light/Light":8,"./lights/light/LightShader":9,"./lights/pointLight/PointLight":10,"./lights/pointLight/PointLightShader":11,"./renderers/LightRenderer":12,"./renderers/WebGLDeferredRenderer":13,"./shapeMeshMixin":14}],2:[function(require,module,exports){
 var tempTexture = null;
 
  /**
@@ -133,7 +136,7 @@ AmbientLight.prototype.renderWebGL = function (renderer)
     renderer.plugins.lights.render(this);
 };
 
-},{"../light/Light":6}],5:[function(require,module,exports){
+},{"../light/Light":8}],5:[function(require,module,exports){
 var LightShader = require('../light/LightShader');
 
 
@@ -149,7 +152,7 @@ function AmbientLightShader(shaderManager) {
         // vertex shader
         null,
         // fragment shader
-        "#define GLSLIFY 1\n\nprecision lowp float;\r\n\r\nuniform sampler2D uSampler;\r\nuniform sampler2D uNormalSampler;\r\n\r\nuniform mat3 translationMatrix;\r\n\r\nuniform vec2 uViewSize;\r\n\r\nuniform vec4 uAmbientColor; // ambient color, alpha channel used for intensity.\r\n\r\nuniform vec4 uLightColor;   // light color, alpha channel used for intensity.\r\nuniform vec3 uLightFalloff; // light attenuation coefficients (constant, linear, quadratic)\r\nuniform float uLightHeight; // light height above the viewport\r\n\n\r\nvoid main(void)\r\n{\r\nvec2 texCoord = gl_FragCoord.xy / uViewSize;\r\ntexCoord.y = 1.0 - texCoord.y; // FBOs are flipped.\r\n\r\nvec4 diffuseColor = texture2D(uSampler, texCoord);\r\nvec4 normalColor = texture2D(uNormalSampler, texCoord);\r\n\r\n// if no normal color here, just discard\r\nif (normalColor.a == 0.0) discard;\r\n\n\r\n    // simplified lambert shading that makes assumptions for ambient color\r\n\r\n    // compute Distance\r\n//    float D = length(lightVector);\r\n    float D = 1.0;\r\n    \r\n    // normalize vectors\r\n    vec3 N = normalize(normalColor.xyz * 2.0 - 1.0);\r\n//    vec3 L = normalize(lightVector);\r\n    vec3 L = vec3(1.0, 1.0, 1.0);\r\n    \r\n    // pre-multiply light color with intensity\r\n    // then perform \"N dot L\" to determine our diffuse\r\n    vec3 diffuse = (uLightColor.rgb * uLightColor.a) * max(dot(N, L), 0.0);\r\n    \r\n    // pre-multiply ambient color with intensity\r\n//    vec3 ambient = uAmbientColor.rgb * uAmbientColor.a;\r\n    \r\n    // calculate attenuation\r\n//    float attenuation = 1.0 / (uLightFalloff.x + (uLightFalloff.y * D) + (uLightFalloff.z * D * D));\r\n    \r\n    // calculate final intesity and color, then combine\r\n//    vec3 intensity = ambient + diffuse * attenuation;\r\n//    vec3 finalColor = diffuseColor.rgb * intensity;\r\n    vec3 finalColor = diffuseColor.rgb * diffuse;\r\n\r\n    // calculate just ambient light color, most lights will override this frag\r\n//    vec3 ambientColor = uLightColor.rgb * uLightColor.a;\r\n//    gl_FragColor = vec4(diffuseColor.rgb * ambientColor, diffuseColor.a);\r\n    gl_FragColor = vec4(finalColor, diffuseColor.a);\r\n}\r\n"
+        "#define GLSLIFY 1\n\nprecision lowp float;\n\nuniform sampler2D uSampler;\nuniform sampler2D uNormalSampler;\n\nuniform mat3 translationMatrix;\n\nuniform vec2 uViewSize;     // size of the viewport\n\nuniform vec4 uLightColor;   // light color, alpha channel used for intensity.\nuniform vec3 uLightFalloff; // light attenuation coefficients (constant, linear, quadratic)\nuniform float uLightHeight; // light height above the viewport\n\n\nvoid main(void)\n{\nvec2 texCoord = gl_FragCoord.xy / uViewSize;\ntexCoord.y = 1.0 - texCoord.y; // FBOs positions are flipped.\n\nvec4 normalColor = texture2D(uNormalSampler, texCoord);\nnormalColor.g = 1.0 - normalColor.g; // Green layer is flipped Y coords.\n\n// bail out early when normal has no data\nif (normalColor.a == 0.0) discard;\n\n\n    // simplified lambert shading that makes assumptions for ambient color\n\n    // compute Distance\n    float D = 1.0;\n    \n    // normalize vectors\n    vec3 N = normalize(normalColor.xyz * 2.0 - 1.0);\n    vec3 L = vec3(1.0, 1.0, 1.0);\n    \n    // pre-multiply light color with intensity\n    // then perform \"N dot L\" to determine our diffuse\n    vec3 diffuse = (uLightColor.rgb * uLightColor.a) * max(dot(N, L), 0.0);\n\n    vec4 diffuseColor = texture2D(uSampler, texCoord);\n    vec3 finalColor = diffuseColor.rgb * diffuse;\n\n    gl_FragColor = vec4(finalColor, diffuseColor.a);\n}\n"
     );
 }
 
@@ -159,7 +162,91 @@ module.exports = AmbientLightShader;
 
 PIXI.ShaderManager.registerPlugin('ambientLightShader', AmbientLightShader);
 
-},{"../light/LightShader":7}],6:[function(require,module,exports){
+},{"../light/LightShader":9}],6:[function(require,module,exports){
+var Light = require('../light/Light');
+
+/**
+ * @class
+ * @extends PIXI.lights.Light
+ * @memberof PIXI.lights
+ *
+ * @param [color=0xFFFFFF] {number} The color of the light.
+ * @param [brightness=1] {number} The intensity of the light.
+ * @param [target] {PIXI.DisplayObject|PIXI.Point} The object in the scene to target.
+ */
+function DirectionalLight(color, brightness, target) {
+    Light.call(this, color, brightness);
+
+    this.target = target;
+    this._directionVector = new PIXI.Point();
+
+    this._updateTransform = Light.prototype.updateTransform;
+    this._syncShader = Light.prototype.syncShader;
+
+    this.shaderName = 'directionalLightShader';
+}
+
+DirectionalLight.prototype = Object.create(Light.prototype);
+DirectionalLight.prototype.constructor = DirectionalLight;
+module.exports = DirectionalLight;
+
+DirectionalLight.prototype.updateTransform = function () {
+    this._updateTransform();
+
+    var vec = this._directionVector,
+        wt = this.worldTransform,
+        tx = this.target.worldTransform ? this.target.worldTransform.tx : this.target.x,
+        ty = this.target.worldTransform ? this.target.worldTransform.ty : this.target.y;
+
+    // calculate direction from this light to the target
+    vec.x = wt.tx - tx;
+    vec.y = wt.ty - ty;
+
+    // normalize
+    var len = Math.sqrt(vec.x * vec.x + vec.y * vec.y);
+    vec.x /= len;
+    vec.y /= len;
+};
+
+DirectionalLight.prototype.syncShader = function (shader) {
+    this._syncShader(shader);
+
+    shader.uniforms.uLightDirection.value[0] = this._directionVector.x;
+    shader.uniforms.uLightDirection.value[1] = this._directionVector.y;
+};
+
+},{"../light/Light":8}],7:[function(require,module,exports){
+var LightShader = require('../light/LightShader');
+
+
+/**
+ * @class
+ * @extends PIXI.Shader
+ * @memberof PIXI.lights
+ * @param shaderManager {ShaderManager} The WebGL shader manager this shader works for.
+ */
+function DirectionalLightShader(shaderManager) {
+    LightShader.call(this,
+        shaderManager,
+        // vertex shader
+        null,
+        // fragment shader
+        "#define GLSLIFY 1\n\nprecision lowp float;\n\n// imports the common uniforms like samplers, and ambient/light color\nuniform sampler2D uSampler;\nuniform sampler2D uNormalSampler;\n\nuniform mat3 translationMatrix;\n\nuniform vec2 uViewSize;     // size of the viewport\n\nuniform vec4 uLightColor;   // light color, alpha channel used for intensity.\nuniform vec3 uLightFalloff; // light attenuation coefficients (constant, linear, quadratic)\nuniform float uLightHeight; // light height above the viewport\n\n\nuniform vec2 uLightDirection;\n\nvoid main()\n{\nvec2 texCoord = gl_FragCoord.xy / uViewSize;\ntexCoord.y = 1.0 - texCoord.y; // FBOs positions are flipped.\n\nvec4 normalColor = texture2D(uNormalSampler, texCoord);\nnormalColor.g = 1.0 - normalColor.g; // Green layer is flipped Y coords.\n\n// bail out early when normal has no data\nif (normalColor.a == 0.0) discard;\n\n\n    // the directional vector of the light\n    vec3 lightVector = vec3(uLightDirection, uLightHeight);\n\n    // compute Distance\n    float D = length(lightVector);\n\n// normalize vectors\nvec3 N = normalize(normalColor.xyz * 2.0 - 1.0);\nvec3 L = normalize(lightVector);\n\n// pre-multiply light color with intensity\n// then perform \"N dot L\" to determine our diffuse\nvec3 diffuse = (uLightColor.rgb * uLightColor.a) * max(dot(N, L), 0.0);\n\n\n    // calculate attenuation\n    float attenuation = 1.0;\n\n// calculate final intesity and color, then combine\nvec3 intensity = diffuse * attenuation;\nvec4 diffuseColor = texture2D(uSampler, texCoord);\nvec3 finalColor = diffuseColor.rgb * intensity;\n\ngl_FragColor = vec4(finalColor, diffuseColor.a);\n\n}\n",
+        // custom uniforms
+        {
+            // the directional vector of the light
+            uLightDirection: { type: '2f', value: new Float32Array(2) }
+        }
+    );
+}
+
+DirectionalLightShader.prototype = Object.create(LightShader.prototype);
+DirectionalLightShader.prototype.constructor = DirectionalLightShader;
+module.exports = DirectionalLightShader;
+
+PIXI.ShaderManager.registerPlugin('directionalLightShader', DirectionalLightShader);
+
+},{"../light/LightShader":9}],8:[function(require,module,exports){
 /**
  * Excuse the mess, haven't cleaned this up yet!
  */
@@ -346,7 +433,7 @@ Light.DRAW_MODES = {
     
 };
 
-},{}],7:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 
 
 /**
@@ -407,9 +494,9 @@ LightShader.prototype = Object.create(PIXI.Shader.prototype);
 LightShader.prototype.constructor = LightShader;
 module.exports = LightShader;
 
-LightShader.defaultVertexSrc = "#define GLSLIFY 1\n\nprecision lowp float;\r\n\r\nattribute vec2 aVertexPosition;\r\n\r\nuniform bool uUseViewportQuad;\r\nuniform mat3 translationMatrix;\r\nuniform mat3 projectionMatrix;\r\n\r\nvoid main(void) {\r\n    if (uUseViewportQuad) {\r\n        gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\r\n    }\r\n    else\r\n    {\r\n        gl_Position = vec4((projectionMatrix * translationMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\r\n    }\r\n}\r\n";
+LightShader.defaultVertexSrc = "#define GLSLIFY 1\n\nprecision lowp float;\n\nattribute vec2 aVertexPosition;\n\nuniform bool uUseViewportQuad;\nuniform mat3 translationMatrix;\nuniform mat3 projectionMatrix;\n\nvoid main(void) {\n    if (uUseViewportQuad) {\n        gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\n    }\n    else\n    {\n        gl_Position = vec4((projectionMatrix * translationMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);\n    }\n}\n";
 
-},{}],8:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 var Light = require('../light/Light');
 
 /**
@@ -455,7 +542,7 @@ PointLight.prototype.syncShader = function (shader) {
     shader.uniforms.uLightRadius.value = this.radius;
 }
 
-},{"../light/Light":6}],9:[function(require,module,exports){
+},{"../light/Light":8}],11:[function(require,module,exports){
 var LightShader = require('../light/LightShader');
 
 
@@ -471,7 +558,7 @@ function PointLightShader(shaderManager) {
         // vertex shader
         null,
         // fragment shader
-        "#define GLSLIFY 1\n\nprecision lowp float;\r\n\r\n// imports the common uniforms like samplers, and ambient color\r\nuniform sampler2D uSampler;\r\nuniform sampler2D uNormalSampler;\r\n\r\nuniform mat3 translationMatrix;\r\n\r\nuniform vec2 uViewSize;\r\n\r\nuniform vec4 uAmbientColor; // ambient color, alpha channel used for intensity.\r\n\r\nuniform vec4 uLightColor;   // light color, alpha channel used for intensity.\r\nuniform vec3 uLightFalloff; // light attenuation coefficients (constant, linear, quadratic)\r\nuniform float uLightHeight; // light height above the viewport\r\n\n\r\nuniform float uLightRadius;\r\n\r\nvoid main()\r\n{\r\n    vec2 texCoord = gl_FragCoord.xy / uViewSize;\r\n    texCoord.y = 1.0 - texCoord.y; // FBOs positions are flipped.\r\n\r\n    vec4 normalColor = texture2D(uNormalSampler, texCoord);\r\n    normalColor.g = 1.0 - normalColor.g; // Green layer is flipped Y coords.\r\n\r\n    // bail out early when normal has no data\r\n    if (normalColor.a == 0.0) discard;\r\n\r\n    vec2 lightPosition = translationMatrix[2].xy / uViewSize;\r\n\r\n    // the directional vector of the light\r\n    vec3 lightVector = vec3(lightPosition - texCoord, uLightHeight);\r\n\r\n    // correct for aspect ratio\r\n    lightVector.x *= uViewSize.x / uViewSize.y;\r\n\r\n    // compute Distance\r\n    float D = length(lightVector);\r\n\r\n    // bail out early when pixel outside of light sphere\r\n    if (D > uLightRadius) discard;\r\n\r\n    // normalize vectors\r\n    vec3 N = normalize(normalColor.xyz * 2.0 - 1.0);\r\n    vec3 L = normalize(lightVector);\r\n    \r\n    // pre-multiply light color with intensity\r\n    // then perform \"N dot L\" to determine our diffuse\r\n    vec3 diffuse = (uLightColor.rgb * uLightColor.a) * max(dot(N, L), 0.0);\r\n\r\n    // calculate attenuation\r\n    float attenuation = 1.0 / (uLightFalloff.x + (uLightFalloff.y * D) + (uLightFalloff.z * D * D));\r\n    \r\n    // calculate final intesity and color, then combine\r\n    vec3 intensity = diffuse * attenuation;\r\n    vec4 diffuseColor = texture2D(uSampler, texCoord);\r\n    vec3 finalColor = diffuseColor.rgb * intensity;\r\n\r\n    gl_FragColor = vec4(finalColor, diffuseColor.a);\r\n}",
+        "#define GLSLIFY 1\n\nprecision lowp float;\n\n// imports the common uniforms like samplers, and ambient color\nuniform sampler2D uSampler;\nuniform sampler2D uNormalSampler;\n\nuniform mat3 translationMatrix;\n\nuniform vec2 uViewSize;     // size of the viewport\n\nuniform vec4 uLightColor;   // light color, alpha channel used for intensity.\nuniform vec3 uLightFalloff; // light attenuation coefficients (constant, linear, quadratic)\nuniform float uLightHeight; // light height above the viewport\n\n\nuniform float uLightRadius;\n\nvoid main()\n{\nvec2 texCoord = gl_FragCoord.xy / uViewSize;\ntexCoord.y = 1.0 - texCoord.y; // FBOs positions are flipped.\n\nvec4 normalColor = texture2D(uNormalSampler, texCoord);\nnormalColor.g = 1.0 - normalColor.g; // Green layer is flipped Y coords.\n\n// bail out early when normal has no data\nif (normalColor.a == 0.0) discard;\n\n\n    vec2 lightPosition = translationMatrix[2].xy / uViewSize;\n\n    // the directional vector of the light\n    vec3 lightVector = vec3(lightPosition - texCoord, uLightHeight);\n\n    // correct for aspect ratio\n    lightVector.x *= uViewSize.x / uViewSize.y;\n\n    // compute Distance\n    float D = length(lightVector);\n\n    // bail out early when pixel outside of light sphere\n    if (D > uLightRadius) discard;\n\n// normalize vectors\nvec3 N = normalize(normalColor.xyz * 2.0 - 1.0);\nvec3 L = normalize(lightVector);\n\n// pre-multiply light color with intensity\n// then perform \"N dot L\" to determine our diffuse\nvec3 diffuse = (uLightColor.rgb * uLightColor.a) * max(dot(N, L), 0.0);\n\n\n    // calculate attenuation\n    float attenuation = 1.0 / (uLightFalloff.x + (uLightFalloff.y * D) + (uLightFalloff.z * D * D));\n\n// calculate final intesity and color, then combine\nvec3 intensity = diffuse * attenuation;\nvec4 diffuseColor = texture2D(uSampler, texCoord);\nvec3 finalColor = diffuseColor.rgb * intensity;\n\ngl_FragColor = vec4(finalColor, diffuseColor.a);\n\n}",
         // custom uniforms
         {
             // height of the light above the viewport
@@ -486,7 +573,7 @@ module.exports = PointLightShader;
 
 PIXI.ShaderManager.registerPlugin('pointLightShader', PointLightShader);
 
-},{"../light/LightShader":7}],10:[function(require,module,exports){
+},{"../light/LightShader":9}],12:[function(require,module,exports){
 /**
  *
  * @class
@@ -672,7 +759,7 @@ LightRenderer.prototype.destroy = function ()
     
 };
 
-},{}],11:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 /**
  * The WebGLDeferredRenderer draws the scene and all its content onto a webGL enabled canvas. This renderer
  * should be used for browsers that support webGL. This Render works by automatically managing webGLBatchs.
@@ -741,7 +828,7 @@ Object.assign(WebGLDeferredRenderer.prototype, {
     }
 });
 
-},{}],12:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 /**
  * Creates vertices and indices arrays to describe this circle.
  * 
