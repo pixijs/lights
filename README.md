@@ -13,6 +13,7 @@ This module is experimental and unoptimized, I do not consider it "production re
  - Hemisphere lights
  - Area lights
 2. Add dynamic shadows
+3. Write tests!
 
 ## Usage
 
