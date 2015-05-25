@@ -6,6 +6,14 @@ A plugin that adds deferred lighting to Pixi.js
 
 This module is experimental and unoptimized, I do not consider it "production ready" yet.
 
+## Roadmap
+
+1. More lighting types, left are:
+ - Spot lights
+ - Hemisphere lights
+ - Area lights
+2. Add dynamic shadows
+
 ## Usage
 
 This module comes with a couple different objects. The important bits are that is comes with a custom
