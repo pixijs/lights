@@ -60,7 +60,8 @@
                     stage.addChild(block1);
                     stage.addChild(block2);
 
-                    stage.addChild(new PIXI.lights.AmbientLight(null, 0.2));
+                    stage.addChild(new PIXI.lights.AmbientLight(null, 0.4));
+                    stage.addChild(new PIXI.lights.DirectionalLight(null, 1, block1));
                     stage.addChild(light);
 
                     renderer.view.addEventListener('mousemove', function (e) {

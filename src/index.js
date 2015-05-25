@@ -11,6 +11,9 @@ module.exports = PIXI.lights = {
     PointLight:             require('./lights/pointLight/PointLight'),
     PointLightShader:       require('./lights/pointLight/PointLightShader'),
 
+    DirectionalLight:             require('./lights/directionalLight/DirectionalLight'),
+    DirectionalLightShader:       require('./lights/directionalLight/DirectionalLightShader'),
+
     LightRenderer:          require('./renderers/LightRenderer'),
     WebGLDeferredRenderer:  require('./renderers/WebGLDeferredRenderer'),
 

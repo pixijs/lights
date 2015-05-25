@@ -1,4 +1,4 @@
-var LightShader = require('../LightShader');
+var LightShader = require('../light/LightShader');
 var glslify = require('glslify');
 
 /**
@@ -17,7 +17,7 @@ function DirectionalLightShader(shaderManager) {
         // custom uniforms
         {
             // the directional vector of the light
-            uLightDirection: { type: '3f', value: new Float32Array(3) }
+            uLightDirection: { type: '2f', value: new Float32Array(2) }
         }
     );
 }
