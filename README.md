@@ -2,6 +2,8 @@
 
 A plugin that adds deferred lighting to Pixi.js
 
+**Note**: This modules *requires* v3.0.7 (or higher) of pixi.js.
+
 ### WARNING: Experimental
 
 This module is experimental and unoptimized, I do not consider it "production ready" yet.
