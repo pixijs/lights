@@ -61,6 +61,8 @@
                     stage.addChild(block1);
                     stage.addChild(block2);
 
+                    // panda has no normal texture, so it will be treated as "unlit"
+                    // and drawn on top of the rendered light scene.
                     var panda = new PIXI.Sprite(res.panda.texture);
                     panda.position.set(700, 225);
                     panda.filters = [new PIXI.filters.BloomFilter()];
