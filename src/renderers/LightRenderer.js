@@ -153,6 +153,7 @@ LightRenderer.prototype.flush = function ()
         }
 
         gl.drawElements(renderer.drawModes[light.drawMode], light.indices.length, gl.UNSIGNED_SHORT, 0);
+        renderer.drawCount++;
     }
 
     this.currentBatchSize = 0;

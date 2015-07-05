@@ -84,6 +84,8 @@ function Light(color, brightness, vertices, indices) {
      */
     this.useViewportQuad = true;
 
+    this.visible = false;
+
     // webgl buffers
     this._vertexBuffer = null;
     this._indexBuffer = null;

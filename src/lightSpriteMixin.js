@@ -8,6 +8,10 @@ var tempTexture = null;
  */
 PIXI.Sprite.prototype._renderWebGL = function (renderer)
 {
+    if (renderer.renderingUnlit && !this.unlit) {
+        return;
+    }
+
     if (!this._originalTexture) {
         this._originalTexture = this._texture;
     }

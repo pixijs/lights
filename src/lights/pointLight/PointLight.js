@@ -15,7 +15,7 @@ function PointLight(color, brightness, radius) {
     radius = radius || Infinity;
 
     if (radius !== Infinity) {
-        var shape = new PIXI.math.Circle(0, 0, radius),
+        var shape = new PIXI.Circle(0, 0, radius),
             mesh = shape.getMesh();
 
         Light.call(this, color, brightness, mesh.vertices, mesh.indices);

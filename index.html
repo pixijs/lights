@@ -37,6 +37,7 @@
                 .add('bg_normal', 'test/BGTextureNORM.jpg')
                 .add('block_diffuse', 'test/block.png')
                 .add('block_normal', 'test/blockNormalMap.png')
+                .add('panda', 'test/panda.png')
                 .load(function (loader, res) {
                     var bg = new PIXI.Sprite(res.bg_diffuse.texture);
 
@@ -59,6 +60,12 @@
                     stage.addChild(block);
                     stage.addChild(block1);
                     stage.addChild(block2);
+
+                    var panda = new PIXI.Sprite(res.panda.texture);
+                    panda.unlit = true;
+                    panda.position.set(700, 225);
+                    panda.filters = [new PIXI.filters.BloomFilter()];
+                    stage.addChild(panda);
 
                     stage.addChild(new PIXI.lights.AmbientLight(null, 0.4));
                     stage.addChild(new PIXI.lights.DirectionalLight(null, 1, block1));

@@ -26,6 +26,8 @@ function WebGLDeferredRenderer(width, height, options)
     options = options || {};
 
     this.renderingNormals = false;
+    this.renderingUnlit = false;
+    this._forwardRender = PIXI.WebGLRenderer.prototype.render;
 
     PIXI.WebGLRenderer.call(this, width, height, options);
 }
@@ -49,8 +51,27 @@ Object.assign(WebGLDeferredRenderer.prototype, {
         this.normalsTexture = new PIXI.RenderTexture(this, this.width, this.height, null, this.resolution);
     },
 
+    // TODO Optimizations:
+    // Only call `updateTransform` once, right now it is call each render pass.
+    // Optimize render texture rendering to reduce duplication, or use render targets directly.
+    // Cache tree transversal, cache elements to use for each render pass?
+
     render: function (object)
     {
+        // no point rendering if our context has been blown up!
+        if (this.gl.isContextLost())
+        {
+            return;
+        }
+
+        this.drawCount = 0;
+
+        this._lastObjectRendered = object;
+
+        /////////////
+        //  Rendering
+        this.renderingUnlit = false;
+
         // render diffuse
         this.renderingNormals = false;
         this.diffuseTexture.render(object);
@@ -63,5 +84,18 @@ Object.assign(WebGLDeferredRenderer.prototype, {
         this.setRenderTarget(this.renderTarget);
         this.setObjectRenderer(this.plugins.lights);
         this.plugins.lights.flush();
+
+        // forward render unlit objects (no normal texture)
+        var cbr = this.clearBeforeRender,
+            draws = this.drawCount;
+
+        this.renderingNormals = false;
+        this.renderingUnlit = true;
+        this.clearBeforeRender = false;
+
+        this._forwardRender(object);
+        this.clearBeforeRender = cbr;
+        this.drawCount += draws;
+        /////////////
     }
 });

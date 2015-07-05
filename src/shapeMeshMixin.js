@@ -7,7 +7,7 @@
  * @param [indicesOutput] {Uint16Array} An array to output the indices into, in gl.TRIANGLE_FAN format. Length must
  *  be `(totalSegments + 3)` or more. If not passed it is created for you.
  */
-PIXI.math.Circle.prototype.getMesh = function (totalSegments, vertices, indices)
+PIXI.Circle.prototype.getMesh = function (totalSegments, vertices, indices)
 {
     totalSegments = totalSegments || 40;
 

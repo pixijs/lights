@@ -15,7 +15,7 @@
   },
   "scripts": {
     "build": "gulp build",
-    "start": "hs .",
+    "start": "hs . -o",
     "docs": "./node_modules/.bin/jsdoc -c ./gulp/util/jsdoc.conf.json"
   },
   "engines": {
