@@ -1,5 +1,3 @@
-precision lowp float;
-
 attribute vec2 aVertexPosition;
 
 uniform bool uUseViewportQuad;

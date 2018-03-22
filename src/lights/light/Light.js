@@ -2,7 +2,7 @@
  * Excuse the mess, haven't cleaned this up yet!
  */
 
-
+var main = require('../../main');
 
 /**
  * @class
@@ -16,7 +16,7 @@ function Light(color, brightness, vertices, indices) {
     if (this.constructor === Light) {
         throw new Error('Light is an abstract base class, it should not be created directly!');
     }
-    
+
     PIXI.DisplayObject.call(this);
 
     /**
@@ -51,7 +51,7 @@ function Light(color, brightness, vertices, indices) {
 
     /**
      * When set, the renderer will reupload the geometry data.
-     * 
+     *
      * @member {boolean}
      */
     this.needsUpdate = true;
@@ -98,11 +98,15 @@ function Light(color, brightness, vertices, indices) {
     if (color || color === 0) {
         this.color = color;
     }
-    
+
     // run the brightness setter
     if (brightness || brightness === 0) {
         this.brightness = brightness;
     }
+
+    this.parentGroup = main.lightGroup;
+
+    this.shaderName = 'lights';
 }
 
 Light.prototype = Object.create(PIXI.DisplayObject.prototype);
@@ -161,27 +165,11 @@ Light.prototype.syncShader = function (shader) {
     shader.uniforms.uLightFalloff.value[2] = this.falloff[2];
 };
 
-Light.prototype.renderWebGL = function (renderer)
+Light.prototype._renderWebGL = function (renderer)
 {
-    // add lights to their renderer on the normals pass
-    if (!renderer.renderingNormals) {
-        return;
-    }
-
     // I actually don't want to interrupt the current batch, so don't set light as the current object renderer.
     // Light renderer works a bit differently in that lights are draw individually on flush (called by WebGLDeferredRenderer).
     //renderer.setObjectRenderer(renderer.plugins.lights);
 
     renderer.plugins.lights.render(this);
-};
-
-Light.prototype.destroy = function ()
-{
-    PIXI.DisplayObject.prototype.destroy.call(this);
-
-    // TODO: Destroy buffers!
-};
-
-Light.DRAW_MODES = {
-    
 };

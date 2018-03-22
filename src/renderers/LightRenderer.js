@@ -1,3 +1,5 @@
+var main = require('../main');
+
 /**
  *
  * @class
@@ -38,6 +40,8 @@ function LightRenderer(renderer)
      */
     this.currentBatchSize = 0;
 
+    this.shaders = {};
+
     /**
      * The current lights in the batch.
      *
@@ -45,6 +49,13 @@ function LightRenderer(renderer)
      */
     this.lights = [];
 }
+
+LightRenderer.prototype.onContextChange = function() {
+    this.gl = this.renderer.gl;
+    for (var key in main.plugins) {
+        this.shaders[key] = new (main.plugins[key])(this.gl);
+    }
+};
 
 LightRenderer.MAX_LIGHTS = 500;
 
@@ -75,7 +86,7 @@ LightRenderer.prototype.flush = function ()
     for (var i = 0; i < this.currentBatchSize; ++i)
     {
         var light = this.lights[i],
-            shader = light.shader || this.renderer.shaderManager.plugins[light.shaderName];
+            shader = this.renderer.shaderManager.plugins[light.pluginName];
 
         if (!light._vertexBuffer)
         {
@@ -85,7 +96,7 @@ LightRenderer.prototype.flush = function ()
         // set shader if needed
         if (shader !== lastShader) {
             lastShader = shader;
-            renderer.shaderManager.setShader(shader);
+            renderer.bindShader(shader);
         }
 
         renderer.blendModeManager.setBlendMode(light.blendMode);
@@ -181,5 +192,5 @@ LightRenderer.prototype._initWebGL = function (light)
 
 LightRenderer.prototype.destroy = function ()
 {
-    
+
 };

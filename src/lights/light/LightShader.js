@@ -6,7 +6,7 @@ var glslify = require('glslify');
  * @memberof PIXI.lights
  * @param shaderManager {ShaderManager} The WebGL shader manager this shader works for.
  */
-function LightShader(shaderManager, vertexSrc, fragmentSrc, customUniforms, customAttributes) {
+function LightShader(gl, vertexSrc, fragmentSrc, customUniforms, customAttributes) {
     var uniforms = {
         translationMatrix:  { type: 'mat3', value: new Float32Array(9) },
         projectionMatrix:   { type: 'mat3', value: new Float32Array(9) },
@@ -51,7 +51,7 @@ function LightShader(shaderManager, vertexSrc, fragmentSrc, customUniforms, cust
         }
     }
 
-    PIXI.Shader.call(this, shaderManager, vertexSrc || LightShader.defaultVertexSrc, fragmentSrc, uniforms, attributes);
+    PIXI.Shader.call(this, gl, vertexSrc || LightShader.defaultVertexSrc, fragmentSrc, attributes);
 }
 
 LightShader.prototype = Object.create(PIXI.Shader.prototype);

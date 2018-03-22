@@ -1,3 +1,4 @@
+var main = require('../../main');
 var LightShader = require('../light/LightShader');
 var glslify = require('glslify');
 
@@ -7,9 +8,9 @@ var glslify = require('glslify');
  * @memberof PIXI.lights
  * @param shaderManager {ShaderManager} The WebGL shader manager this shader works for.
  */
-function DirectionalLightShader(shaderManager) {
+function DirectionalLightShader(gl) {
     LightShader.call(this,
-        shaderManager,
+        gl,
         // vertex shader
         null,
         // fragment shader

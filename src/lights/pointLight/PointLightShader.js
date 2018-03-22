@@ -1,3 +1,4 @@
+var main = require('../../main');
 var LightShader = require('../light/LightShader');
 var glslify = require('glslify');
 
@@ -7,9 +8,9 @@ var glslify = require('glslify');
  * @memberof PIXI.lights
  * @param shaderManager {ShaderManager} The WebGL shader manager this shader works for.
  */
-function PointLightShader(shaderManager) {
+function PointLightShader(gl) {
     LightShader.call(this,
-        shaderManager,
+        gl,
         // vertex shader
         null,
         // fragment shader
@@ -26,4 +27,4 @@ PointLightShader.prototype = Object.create(LightShader.prototype);
 PointLightShader.prototype.constructor = PointLightShader;
 module.exports = PointLightShader;
 
-PIXI.ShaderManager.registerPlugin('pointLightShader', PointLightShader);
+main.registerPlugin('pointLightShader', PointLightShader);
