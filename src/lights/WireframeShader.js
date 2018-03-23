@@ -1,3 +1,4 @@
+var main = require('../main');
 var glslify = require('glslify');
 
 /**
@@ -6,15 +7,12 @@ var glslify = require('glslify');
  * @memberof PIXI.lights
  * @param shaderManager {ShaderManager} The WebGL shader manager this shader works for.
  */
-function WireframeShader(shaderManager) {
+function WireframeShader(gl) {
     PIXI.Shader.call(this,
-        shaderManager,
+        gl,
         // vertex shader
         [
-            'precision lowp float;',
-
             'attribute vec2 aVertexPosition;',
-
             'uniform mat3 projectionMatrix;',
 
             'void main(void) {',
@@ -27,11 +25,11 @@ function WireframeShader(shaderManager) {
             '    gl_FragColor = vec4(0, 0, 0, 1);',
             '}'
         ].join('\n'),
-        // uniforms
+        /*// uniforms
         {
             translationMatrix:  { type: 'mat3', value: new Float32Array(9) },
             projectionMatrix:   { type: 'mat3', value: new Float32Array(9) }
-        },
+        },*/
         // attributes
         {
             aVertexPosition: 0
@@ -43,4 +41,4 @@ WireframeShader.prototype = Object.create(PIXI.Shader.prototype);
 WireframeShader.prototype.constructor = WireframeShader;
 module.exports = WireframeShader;
 
-PIXI.ShaderManager.registerPlugin('wireframeShader', WireframeShader);
+main.registerPlugin('wireframeShader', WireframeShader);

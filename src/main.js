@@ -3,6 +3,10 @@ module.exports = {
     registerPlugin: function(name, fun) {
         this.plugins[name] = fun;
     },
-    lightGroup: new PIXI.display.Group(),
-    normalGroup: new PIXI.display.Group()
+    diffuseGroup: new PIXI.display.Group(),
+    normalGroup: new PIXI.display.Group(),
+    lightGroup: new PIXI.display.Group()
 };
+
+module.exports.diffuseGroup.useRenderTexture = true;
+module.exports.normalGroup.useRenderTexture = true;

@@ -26,7 +26,7 @@ DirectionalLight.prototype.constructor = DirectionalLight;
 module.exports = DirectionalLight;
 
 DirectionalLight.prototype.updateTransform = function () {
-    this._updateTransform();
+    this.containerUpdateTransform();
 
     var vec = this._directionVector,
         wt = this.worldTransform,
@@ -46,6 +46,8 @@ DirectionalLight.prototype.updateTransform = function () {
 DirectionalLight.prototype.syncShader = function (shader) {
     this._syncShader(shader);
 
-    shader.uniforms.uLightDirection.value[0] = this._directionVector.x;
-    shader.uniforms.uLightDirection.value[1] = this._directionVector.y;
+    var uLightDirection = shader.uniforms.uLightDirection;
+    uLightDirection[0] = this._directionVector.x;
+    uLightDirection[1] = this._directionVector.y;
+    shader.uniforms.uLightDirection = uLightDirection;
 };

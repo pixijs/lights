@@ -40,5 +40,5 @@ module.exports = PointLight;
 PointLight.prototype.syncShader = function (shader) {
     this._syncShader(shader);
 
-    shader.uniforms.uLightRadius.value = this.radius;
+    shader.uniforms.uLightRadius = this.radius;
 }

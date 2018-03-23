@@ -18,17 +18,3 @@ function AmbientLight(color, brightness) {
 AmbientLight.prototype = Object.create(Light.prototype);
 AmbientLight.prototype.constructor = AmbientLight;
 module.exports = AmbientLight;
-
-AmbientLight.prototype.renderWebGL = function (renderer)
-{
-    // add lights to their renderer on the normals pass
-    if (!renderer.renderingNormals) {
-        return;
-    }
-
-    // I actually don't want to interrupt the current batch, so don't set light as the current object renderer.
-    // Light renderer works a bit differently in that lights are draw individually on flush (called by WebGLDeferredRenderer).
-    //renderer.setObjectRenderer(renderer.plugins.lights);
-
-    renderer.plugins.lights.render(this);
-};

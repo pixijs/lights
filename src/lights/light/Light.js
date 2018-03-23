@@ -17,7 +17,7 @@ function Light(color, brightness, vertices, indices) {
         throw new Error('Light is an abstract base class, it should not be created directly!');
     }
 
-    PIXI.DisplayObject.call(this);
+    PIXI.Container.call(this);
 
     /**
      * An array of vertices
@@ -50,11 +50,11 @@ function Light(color, brightness, vertices, indices) {
     this.drawMode = PIXI.DRAW_MODES.TRIANGLES;
 
     /**
-     * When set, the renderer will reupload the geometry data.
+     * When incremented the renderer will re-upload indices
      *
-     * @member {boolean}
+     * @member {number}
      */
-    this.needsUpdate = true;
+    this.dirty = 0;
 
     /**
      * The height of the light from the viewport.
@@ -62,7 +62,7 @@ function Light(color, brightness, vertices, indices) {
      * @member {number}
      * @default 0.075
      */
-    this.height = 0.075;
+    this.lightHeight = 0.075;
 
     /**
      * The falloff attenuation coeficients.
@@ -84,12 +84,6 @@ function Light(color, brightness, vertices, indices) {
      */
     this.useViewportQuad = true;
 
-    this.visible = false;
-
-    // webgl buffers
-    this._vertexBuffer = null;
-    this._indexBuffer = null;
-
     // color and brightness are exposed through setters
     this._color = 0x4d4d59;
     this._colorRgba = [0.3, 0.3, 0.35, 0.8];
@@ -106,10 +100,18 @@ function Light(color, brightness, vertices, indices) {
 
     this.parentGroup = main.lightGroup;
 
+
+    /**
+     * WebGL data for this light
+     * @member {Object}
+     * @private
+     */
+    this._glDatas = {};
+
     this.shaderName = 'lights';
 }
 
-Light.prototype = Object.create(PIXI.DisplayObject.prototype);
+Light.prototype = Object.create(PIXI.Container.prototype);
 Light.prototype.constructor = Light;
 module.exports = Light;
 
@@ -151,25 +153,30 @@ Object.defineProperties(Light.prototype, {
 });
 
 Light.prototype.syncShader = function (shader) {
-    shader.uniforms.uUseViewportQuad.value = this.useViewportQuad;
+    shader.uniforms.uUseViewportQuad = this.useViewportQuad;
 
-    shader.uniforms.uLightColor.value[0] = this._colorRgba[0];
-    shader.uniforms.uLightColor.value[1] = this._colorRgba[1];
-    shader.uniforms.uLightColor.value[2] = this._colorRgba[2];
-    shader.uniforms.uLightColor.value[3] = this._colorRgba[3];
+    var uLightColor = shader.uniforms.uLightColor;
+    if (uLightColor) {
+        uLightColor[0] = this._colorRgba[0];
+        uLightColor[1] = this._colorRgba[1];
+        uLightColor[2] = this._colorRgba[2];
+        uLightColor[3] = this._colorRgba[3];
+        shader.uniforms.uLightColor = uLightColor;
+    }
 
-    shader.uniforms.uLightHeight.value = this.height;
+    shader.uniforms.uLightHeight = this.lightHeight;
 
-    shader.uniforms.uLightFalloff.value[0] = this.falloff[0];
-    shader.uniforms.uLightFalloff.value[1] = this.falloff[1];
-    shader.uniforms.uLightFalloff.value[2] = this.falloff[2];
+    var uLightFalloff = shader.uniforms.uLightFalloff;
+    if (uLightFalloff) {
+        uLightFalloff[0] = this.falloff[0];
+        uLightFalloff[1] = this.falloff[1];
+        uLightFalloff[2] = this.falloff[2];
+        shader.uniforms.uLightFalloff = uLightFalloff;
+    }
 };
 
 Light.prototype._renderWebGL = function (renderer)
 {
-    // I actually don't want to interrupt the current batch, so don't set light as the current object renderer.
-    // Light renderer works a bit differently in that lights are draw individually on flush (called by WebGLDeferredRenderer).
-    //renderer.setObjectRenderer(renderer.plugins.lights);
-
+    renderer.setObjectRenderer(renderer.plugins.lights);
     renderer.plugins.lights.render(this);
 };

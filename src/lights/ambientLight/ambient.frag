@@ -1,4 +1,4 @@
-precision lowp float;
+precision highp float;
 
 #pragma glslify: import("../_shared/commonUniforms.glsl");
 
@@ -11,11 +11,11 @@ void main(void)
 
     // compute Distance
     float D = 1.0;
-    
+
     // normalize vectors
     vec3 N = normalize(normalColor.xyz * 2.0 - 1.0);
     vec3 L = vec3(1.0, 1.0, 1.0);
-    
+
     // pre-multiply light color with intensity
     // then perform "N dot L" to determine our diffuse
     vec3 diffuse = (uLightColor.rgb * uLightColor.a) * max(dot(N, L), 0.0);

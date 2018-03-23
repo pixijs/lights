@@ -1,7 +1,4 @@
-module.exports = PIXI.lights = {
-//    LitSprite: require('./light_1/LitSprite'),
-//    LightingRenderer: require('./light_1/webgl/LightingRenderer')
-
+PIXI.lights = {
     Light:                  require('./lights/light/Light'),
     LightShader:            require('./lights/light/LightShader'),
 
@@ -15,10 +12,12 @@ module.exports = PIXI.lights = {
     DirectionalLightShader:       require('./lights/directionalLight/DirectionalLightShader'),
 
     LightRenderer:          require('./renderers/LightRenderer'),
-    WebGLDeferredRenderer:  require('./renderers/WebGLDeferredRenderer'),
 
     WireframeShader:        require('./lights/WireframeShader')
 };
 
-require('./lightSpriteMixin');
+Object.assign(PIXI.lights, require('./main'));
+
+module.exports = PIXI.lights;
+
 require('./shapeMeshMixin');

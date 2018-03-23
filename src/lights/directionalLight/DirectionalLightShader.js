@@ -27,4 +27,4 @@ DirectionalLightShader.prototype = Object.create(LightShader.prototype);
 DirectionalLightShader.prototype.constructor = DirectionalLightShader;
 module.exports = DirectionalLightShader;
 
-PIXI.ShaderManager.registerPlugin('directionalLightShader', DirectionalLightShader);
+main.registerPlugin('directionalLightShader', DirectionalLightShader);

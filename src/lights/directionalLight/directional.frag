@@ -1,4 +1,4 @@
-precision lowp float;
+precision highp float;
 
 // imports the common uniforms like samplers, and ambient/light color
 #pragma glslify: import("../_shared/commonUniforms.glsl")
