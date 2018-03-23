@@ -2,11 +2,13 @@
 
 A plugin that adds deferred lighting to Pixi.js
 
-**Note**: This modules *requires* v3.0.7 (or higher) of pixi.js.
+**Note**: This modules *requires* v4.7.1 (or higher) of [pixi.js](https://github.com/pixijs/pixi.js).
+**Note**: This modules *requires* v4.7.1 (or higher) of [pixi-layers](https://github.com/pixijs/pixi-display).
 
 ### WARNING: Experimental
 
-This module is experimental and unoptimized, I do not consider it "production ready" yet.
+@xerver: This module is experimental and unoptimized, I do not consider it "production ready" yet.
+@ivanpopelyshev: I approve it for production
 
 ## Roadmap
 
@@ -19,40 +21,61 @@ This module is experimental and unoptimized, I do not consider it "production re
 
 ## Usage
 
-This module comes with a couple different objects. The important bits are that is comes with a custom
-renderer that does deferred shading, the `WebGLDeferredRenderer`. There also multiple light objects
-that can be added to your scene like normal objects and they will emit light.
+[Example](http://pixijs.io/examples/#/layers/normals.js)
 
-Here is a quick usage example:
+You have to create three layers: one for sprites, one for their normals and one for lights. 
+Sprites and normals are rendered to temporary RenderTexture, and lights have those two textures as an input.  
 
 ```js
-var renderer = new PIXI.lights.WebGLDeferredRenderer(1024, 512),
-    stage = new PIXI.Container(),
-    light = new PIXI.lights.PointLight(0xffffff, 1);
+var WIDTH = 800, HEIGHT = 600;
 
-PIXI.loader.add(['block.png', 'blockNormal.png']).load(function (loader, res) {
-    var block = new PIXI.Sprite(res['block.png'].texture);
+var app = new PIXI.Application(WIDTH, HEIGHT);
+document.body.appendChild(app.view);
 
-    // also need to set the normal texture for lighting to work right
-    block.normalTexture = res['blockNormal.png'].texture;
+var stage = app.stage = new PIXI.display.Stage();
+var light = new PIXI.lights.PointLight(0xffffff, 1);
 
-    // add the block and the light to the stage
-    stage.addChild(block);
-    stage.addChild(light);
+// put all layers for deferred rendering of normals
+stage.addChild(new PIXI.display.Layer(PIXI.lights.diffuseGroup));
+stage.addChild(new PIXI.display.Layer(PIXI.lights.normalGroup));
+stage.addChild(new PIXI.display.Layer(PIXI.lights.lightGroup));
 
-    animate();
-});
+PIXI.loader.baseUrl = 'https://cdn.rawgit.com/pixijs/pixi-lights/b7fd7924fdf4e6a6b913ff29161402e7b36f0c0f/';
 
-function animate() {
-    requestAnimationFrame(animate);
-    renderer.render(stage);
+PIXI.loader
+    .add('bg_diffuse', 'test/BGTextureTest.jpg')
+    .add('bg_normal', 'test/BGTextureNORM.jpg')
+    .load(onAssetsLoaded);
+
+function createPair(diffuseTex, normalTex) {
+    var container = new PIXI.Container();
+    var diffuseSprite = new PIXI.Sprite(diffuseTex);
+    diffuseSprite.parentGroup = PIXI.lights.diffuseGroup;
+    var normalSprite = new PIXI.Sprite(normalTex);
+    normalSprite.parentGroup = PIXI.lights.normalGroup;
+    container.addChild(diffuseSprite);
+    container.addChild(normalSprite);
+    return container;
 }
+
+function onAssetsLoaded(loader, res) {
+    var bg = createPair(res.bg_diffuse.texture, res.bg_normal.texture);
+    light.position.set(525, 160);
+    
+    //add more lights if needed
+    bg.interactive = true;
+    bg.on('mousemove', function (event) {
+        light.position.copy(event.data.global);
+    });
+
+    bg.on('pointerdown', function (event) {
+        var clickLight = new PIXI.lights.PointLight(0xffffff);
+        clickLight.position.copy(event.data.global);
+        stage.addChild(clickLight);
+    });
+}
+
 ```
-
-Pretty much exactly the same as any normal PIXI scene, except for two things:
-
-1. You must use the `PIXI.lights.WebGLDeferredRenderer`
-2. You must assign a normal texture to any sprite you want illuminated
 
 ## Building
 
