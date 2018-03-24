@@ -46,7 +46,7 @@
     "lib/*"
   ],
   "peerDependencies": {
-    "pixi.js": "^4.7.0",
+    "pixi.js": "^4.5.0",
     "pixi-layers": "^0.1.6"
   },
   "devDependencies": {
