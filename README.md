@@ -1,5 +1,7 @@
 # PixiJS Lights
 
+[![Build Status](https://travis-ci.org/pixijs/pixi-lights.svg?branch=master)](https://travis-ci.org/pixijs/pixi-lights)
+
 A plugin that adds deferred lighting to Pixi.js
 
 **Note**: This modules *requires* v4.7.1 (or higher) of [pixi.js](https://github.com/pixijs/pixi.js)
