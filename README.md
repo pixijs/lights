@@ -26,8 +26,7 @@ and v0.1.6 (or higher) of [pixi-layers](https://github.com/pixijs/pixi-display).
 
 [Example](http://pixijs.io/examples/#/layers/normals.js)
 
-You have to create three layers: one for sprites, one for their normals and one for lights. 
-Sprites and normals are rendered to temporary RenderTexture, and lights have those two textures as an input.  
+You have to create three layers: one for sprites, one for their normals and one for lights. Sprites and normals are rendered to temporary RenderTexture, and lights have those two textures as an input.  
 
 ```js
 var WIDTH = 800, HEIGHT = 600;
