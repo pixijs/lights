@@ -30,7 +30,8 @@ export default class Light extends PIXI.Container {
          * The blend mode to be applied to the light.
          *
          * @member {number}
-         * @default CONST.BLEND_MODES.ADD;
+         * @default PIXI.BLEND_MODES.ADD
+         * @see http://pixijs.download/release/docs/PIXI.html#.BLEND_MODES
          */
         this.blendMode = PIXI.BLEND_MODES.ADD;
 
@@ -38,7 +39,8 @@ export default class Light extends PIXI.Container {
          * The draw mode to be applied to the light geometry.
          *
          * @member {number}
-         * @default CONST.DRAW_MODES.TRIANGLES;
+         * @default PIXI.DRAW_MODES.TRIANGLES
+         * @see http://pixijs.download/release/docs/PIXI.html#.DRAW_MODES
          */
         this.drawMode = PIXI.DRAW_MODES.TRIANGLES;
 

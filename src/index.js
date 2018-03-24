@@ -1,3 +1,6 @@
+/**
+ * @namespace PIXI
+ */
 import './mixins/Circle';
 export { default as Light } from './lights/light/Light';
 export { default as LightShader } from './lights/light/LightShader';
