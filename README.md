@@ -5,6 +5,9 @@ A plugin that adds deferred lighting to Pixi.js
 **Note**: This modules *requires* v4.7.1 (or higher) of [pixi.js](https://github.com/pixijs/pixi.js)
 and v0.1.6 (or higher) of [pixi-layers](https://github.com/pixijs/pixi-display).
 
+* [Demo](http://pixijs.io/pixi-lights/demo/index.html)
+* [Documentation](http://pixijs.io/pixi-lights/docs/index.html)
+
 ### WARNING: Experimental
 
 @xerver: This module is experimental and unoptimized, I do not consider it "production ready" yet.

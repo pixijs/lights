@@ -31,7 +31,7 @@
     "postpublish": "npm run deploy",
     "predeploy": "npm run docs",
     "copy": "copyfiles -f \"node_modules/{pixi.js,pixi-layers}/dist/*.{js,map}\" demo/lib",
-    "deploy": "gh-pages -d . -s \"{demo,docs}/**\"",
+    "deploy": "gh-pages -d . -s \"{demo,docs,lib}/**\"",
     "start": "parallelshell \"npm run watch\" \"npm run dev\""
   },
   "engines": {
