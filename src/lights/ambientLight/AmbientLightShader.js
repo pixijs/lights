@@ -1,25 +1,17 @@
-var main = require('../../main');
-var LightShader = require('../light/LightShader');
-var glslify = require('glslify');
+import {registerPlugin} from '../../main';
+import LightShader from '../light/LightShader';
+import fragment from './ambient.frag';
 
 /**
  * @class
- * @extends PIXI.Shader
+ * @extends PIXI.lights.LightShader
  * @memberof PIXI.lights
- * @param shaderManager {ShaderManager} The WebGL shader manager this shader works for.
+ * @param gl {ShaderManager} The WebGL shader manager this shader works for.
  */
-function AmbientLightShader(gl) {
-    LightShader.call(this,
-        gl,
-        // vertex shader
-        null,
-        // fragment shader
-        glslify(__dirname + '/ambient.frag')
-    );
+export default class AmbientLightShader extends LightShader {
+    constructor(gl) {
+        super(gl, null, fragment);
+    }
 }
 
-AmbientLightShader.prototype = Object.create(LightShader.prototype);
-AmbientLightShader.prototype.constructor = AmbientLightShader;
-module.exports = AmbientLightShader;
-
-main.registerPlugin('ambientLightShader', AmbientLightShader);
+registerPlugin('ambientLightShader', AmbientLightShader);

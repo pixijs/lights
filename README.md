@@ -1,4 +1,4 @@
-# pixi-lights
+# PixiJS Lights
 
 A plugin that adds deferred lighting to Pixi.js
 
@@ -79,11 +79,10 @@ function onAssetsLoaded(loader, res) {
 
 ## Building
 
-You normally don't need to build this module, you can just download a release from the
-releases page.
+You normally don't need to build this module, you can just download a release from the releases page.
 
 However, if you are developing on the project or want a bleeding edge build then you
-will need to have [node][node] and [gulp][gulp] setup on your machine.
+will need to have [node][node] setup on your machine.
 
 Then you can install dependencies and build:
 
@@ -91,7 +90,6 @@ Then you can install dependencies and build:
 npm i && npm run build
 ```
 
-That will output the built distributables to `./bin`.
+That will output the built distributables to `./lib`.
 
 [node]:       http://nodejs.org/
-[gulp]:       http://gulpjs.com/

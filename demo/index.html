@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui" />
+        <title>Pixi Lighting</title>
+        <style>
+            body {
+                margin:0;
+                padding:0;
+                background:black;
+            }
+            canvas {
+                display: block;
+                position:absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+        </style>
+    </head>
+
+    <body>
+        <script src="lib/pixi.min.js"></script>
+        <script src="lib/pixi-layers.js"></script>
+        <script src="../lib/pixi-lights.js"></script>
+        <script>
+            var WIDTH = 1024, HEIGHT = 512;
+
+            var app = new PIXI.Application(WIDTH, HEIGHT);
+            document.body.appendChild(app.view);
+
+            var stage = app.stage = new PIXI.display.Stage();
+            var light = new PIXI.lights.PointLight(0xffffff, 1);
+
+            // put all layers for deferred rendering of normals
+            stage.addChild(new PIXI.display.Layer(PIXI.lights.diffuseGroup));
+            stage.addChild(new PIXI.display.Layer(PIXI.lights.normalGroup));
+            stage.addChild(new PIXI.display.Layer(PIXI.lights.lightGroup));
+
+            PIXI.loader
+                .add('bg_diffuse', 'images/BGTextureTest.jpg')
+                .add('bg_normal', 'images/BGTextureNORM.jpg')
+                .add('block_diffuse', 'images/block.png')
+                .add('block_normal', 'images/blockNormalMap.png')
+                .load(onAssetsLoaded);
+
+            function createPair(diffuseTex, normalTex) {
+                var container = new PIXI.Container();
+                var diffuseSprite = new PIXI.Sprite(diffuseTex);
+                diffuseSprite.parentGroup = PIXI.lights.diffuseGroup;
+                var normalSprite = new PIXI.Sprite(normalTex);
+                normalSprite.parentGroup = PIXI.lights.normalGroup;
+                container.addChild(diffuseSprite);
+                container.addChild(normalSprite);
+                return container;
+            }
+
+            function onAssetsLoaded(loader, res) {
+                var bg = createPair(res.bg_diffuse.texture, res.bg_normal.texture);
+                var block = createPair(res.block_diffuse.texture, res.block_normal.texture);
+                var block1 = createPair(res.block_diffuse.texture, res.block_normal.texture);
+                var block2 = createPair(res.block_diffuse.texture, res.block_normal.texture);
+
+                block.position.set(100, 100);
+                block1.position.set(500, 100);
+                block2.position.set(300, 400);
+
+                light.position.set(525, 160);
+                stage.addChild(bg);
+                stage.addChild(block);
+                stage.addChild(block1);
+                stage.addChild(block2);
+
+                stage.addChild(new PIXI.lights.AmbientLight(null, 0.4));
+                stage.addChild(new PIXI.lights.DirectionalLight(null, 1, block1));
+                stage.addChild(light);
+
+                bg.interactive = true;
+                bg.on('mousemove', function (event) {
+                    light.position.copy(event.data.global);
+                });
+
+                bg.on('pointerdown', function (event) {
+                    var clickLight = new PIXI.lights.PointLight(0xffffff);
+                    clickLight.position.copy(event.data.global);
+                    stage.addChild(clickLight);
+                });
+            }
+
+        </script>
+    </body>
+</html>

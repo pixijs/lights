@@ -1,14 +1,20 @@
-precision highp float;
+import commonUniforms from '../shared/commonUniforms.glsl';
+import computeVertexPosition from '../shared/computeVertexPosition.glsl';
+import loadNormals from '../shared/loadNormals.glsl';
+import computeDiffuse from '../shared/computeDiffuse.glsl';
+import combine from '../shared/combine.glsl';
+
+export default `precision highp float;
 
 // imports the common uniforms like samplers, and ambient color
-#pragma glslify: import("../_shared/commonUniforms.glsl");
+${commonUniforms}
 
 uniform float uLightRadius;
 
 void main()
 {
-#pragma glslify: import("../_shared/computeVertexPosition.glsl");
-#pragma glslify: import("../_shared/loadNormals.glsl");
+${computeVertexPosition}
+${loadNormals}
 
     vec2 lightPosition = translationMatrix[2].xy / uViewSize;
 
@@ -24,10 +30,11 @@ void main()
     // bail out early when pixel outside of light sphere
     if (D > uLightRadius) discard;
 
-#pragma glslify: import("../_shared/computeDiffuse.glsl");
+${computeDiffuse}
 
     // calculate attenuation
     float attenuation = 1.0 / (uLightFalloff.x + (uLightFalloff.y * D) + (uLightFalloff.z * D * D));
 
-#pragma glslify: import("../_shared/combine.glsl");
+${combine}
 }
+`;
