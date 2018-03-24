@@ -1,6 +1,6 @@
-var main = require('../../main');
-var LightShader = require('../light/LightShader');
-var glslify = require('glslify');
+import {registerPlugin} from '../../main';
+import LightShader from '../light/LightShader';
+import fragment from './directional.frag';
 
 /**
  * @class
@@ -8,23 +8,16 @@ var glslify = require('glslify');
  * @memberof PIXI.lights
  * @param shaderManager {ShaderManager} The WebGL shader manager this shader works for.
  */
-function DirectionalLightShader(gl) {
-    LightShader.call(this,
-        gl,
-        // vertex shader
-        null,
-        // fragment shader
-        glslify(__dirname + '/directional.frag'),
-        // custom uniforms
-        {
+export default class DirectionalLightShader extends LightShader {
+    constructor(gl) {
+        super(gl, null, fragment, {
             // the directional vector of the light
-            uLightDirection: { type: '2f', value: new Float32Array(2) }
-        }
-    );
+            uLightDirection: {
+                type: '2f',
+                value: new Float32Array(2)
+            }
+        });
+    }
 }
 
-DirectionalLightShader.prototype = Object.create(LightShader.prototype);
-DirectionalLightShader.prototype.constructor = DirectionalLightShader;
-module.exports = DirectionalLightShader;
-
-main.registerPlugin('directionalLightShader', DirectionalLightShader);
+registerPlugin('directionalLightShader', DirectionalLightShader);

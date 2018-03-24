@@ -1,11 +1,15 @@
-precision highp float;
+import commonUniforms from '../shared/commonUniforms.glsl';
+import computeVertexPosition from '../shared/computeVertexPosition.glsl';
+import loadNormals from '../shared/loadNormals.glsl';
 
-#pragma glslify: import("../_shared/commonUniforms.glsl");
+export default `precision highp float;
+
+${commonUniforms}
 
 void main(void)
 {
-#pragma glslify: import("../_shared/computeVertexPosition.glsl");
-#pragma glslify: import("../_shared/loadNormals.glsl");
+${computeVertexPosition}
+${loadNormals}
 
     // simplified lambert shading that makes assumptions for ambient color
 
@@ -25,3 +29,4 @@ void main(void)
 
     gl_FragColor = vec4(finalColor, diffuseColor.a);
 }
+`;

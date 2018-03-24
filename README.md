@@ -1,9 +1,14 @@
-# pixi-lights
+# PixiJS Lights
+
+[![Build Status](https://travis-ci.org/pixijs/pixi-lights.svg?branch=master)](https://travis-ci.org/pixijs/pixi-lights)
 
 A plugin that adds deferred lighting to Pixi.js
 
 **Note**: This modules *requires* v4.7.1 (or higher) of [pixi.js](https://github.com/pixijs/pixi.js)
 and v0.1.6 (or higher) of [pixi-layers](https://github.com/pixijs/pixi-display).
+
+* [Demo](http://pixijs.io/pixi-lights/demo/index.html)
+* [Documentation](http://pixijs.io/pixi-lights/docs/index.html)
 
 ### WARNING: Experimental
 
@@ -23,8 +28,7 @@ and v0.1.6 (or higher) of [pixi-layers](https://github.com/pixijs/pixi-display).
 
 [Example](http://pixijs.io/examples/#/layers/normals.js)
 
-You have to create three layers: one for sprites, one for their normals and one for lights. 
-Sprites and normals are rendered to temporary RenderTexture, and lights have those two textures as an input.  
+You have to create three layers: one for sprites, one for their normals and one for lights. Sprites and normals are rendered to temporary RenderTexture, and lights have those two textures as an input.  
 
 ```js
 var WIDTH = 800, HEIGHT = 600;
@@ -79,11 +83,10 @@ function onAssetsLoaded(loader, res) {
 
 ## Building
 
-You normally don't need to build this module, you can just download a release from the
-releases page.
+You normally don't need to build this module, you can just download a release from the releases page.
 
 However, if you are developing on the project or want a bleeding edge build then you
-will need to have [node][node] and [gulp][gulp] setup on your machine.
+will need to have [node][node] setup on your machine.
 
 Then you can install dependencies and build:
 
@@ -91,7 +94,6 @@ Then you can install dependencies and build:
 npm i && npm run build
 ```
 
-That will output the built distributables to `./bin`.
+That will output the built distributables to `./lib`.
 
 [node]:       http://nodejs.org/
-[gulp]:       http://gulpjs.com/

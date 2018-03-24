@@ -1,4 +1,4 @@
-var Light = require('../light/Light');
+import Light from '../light/Light';
 
 /**
  * @class
@@ -11,34 +11,26 @@ var Light = require('../light/Light');
  *  to change the falloff of the light as well if you change this value. Infinity will
  *  use the entire viewport as the drawing surface.
  */
-function PointLight(color, brightness, radius) {
-    radius = radius || Infinity;
+export default class PointLight extends Light {
+    constructor(color=0xFFFFFF, brightness=1, radius=Infinity) {
+        if (radius !== Infinity) {
+            const shape = new PIXI.Circle(0, 0, radius);
+            const {vertices, indices} = shape.getMesh();
 
-    if (radius !== Infinity) {
-        var shape = new PIXI.Circle(0, 0, radius),
-            mesh = shape.getMesh();
+            super(color, brightness, vertices, indices);
 
-        Light.call(this, color, brightness, mesh.vertices, mesh.indices);
-
-        this.useViewportQuad = false;
-        this.drawMode = PIXI.DRAW_MODES.TRIANGLE_FAN;
+            this.useViewportQuad = false;
+            this.drawMode = PIXI.DRAW_MODES.TRIANGLE_FAN;
+        }
+        else {
+            super(color, brightness);
+        }
+        this.radius = radius;
+        this.shaderName = 'pointLightShader';
     }
-    else {
-        Light.call(this, color, brightness);
+
+    syncShader(shader) {
+        super.syncShader(shader);
+        shader.uniforms.uLightRadius = this.radius;
     }
-
-    this._syncShader = Light.prototype.syncShader;
-
-    this.radius = radius;
-    this.shaderName = 'pointLightShader';
-}
-
-PointLight.prototype = Object.create(Light.prototype);
-PointLight.prototype.constructor = PointLight;
-module.exports = PointLight;
-
-PointLight.prototype.syncShader = function (shader) {
-    this._syncShader(shader);
-
-    shader.uniforms.uLightRadius = this.radius;
 }

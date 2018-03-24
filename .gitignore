@@ -20,3 +20,6 @@ npm-debug.log
 !.gitkeep
 *__temp
 node_modules
+docs
+lib
+demo/lib

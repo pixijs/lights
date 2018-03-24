@@ -1,12 +1,19 @@
-module.exports = {
-    plugins: {},
-    registerPlugin: function(name, fun) {
-        this.plugins[name] = fun;
-    },
-    diffuseGroup: new PIXI.display.Group(),
-    normalGroup: new PIXI.display.Group(),
-    lightGroup: new PIXI.display.Group()
-};
+const plugins = {};
+const diffuseGroup = new PIXI.display.Group();
+const normalGroup = new PIXI.display.Group();
+const lightGroup = new PIXI.display.Group();
 
-module.exports.diffuseGroup.useRenderTexture = true;
-module.exports.normalGroup.useRenderTexture = true;
+diffuseGroup.useRenderTexture = true;
+normalGroup.useRenderTexture = true;
+
+function registerPlugin(name, func) {
+    plugins[name] = func;
+}
+
+export {
+    plugins,
+    diffuseGroup,
+    normalGroup,
+    lightGroup,
+    registerPlugin
+};

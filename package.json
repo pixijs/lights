@@ -3,8 +3,13 @@
   "version": "1.0.0",
   "description": "A plugin that adds deferred lighting to Pixi.js",
   "license": "MIT",
-  "main": "./src/index.js",
+  "main": "./lib/pixi-lights.js",
+  "module": "./lib/pixi-lights.es.js",
   "author": "Chad Engler <chad@pantherdev.com>",
+  "contributors": [
+    "Matt Karl <matt@mattkarl.com>",
+    "Ivan Popelyshev <ivanpopelyshev@gmail.com>"
+  ],
   "homepage": "https://github.com/pixijs/pixi-lights",
   "repository": {
     "type": "git",
@@ -14,56 +19,54 @@
     "url": "https://github.com/pixijs/pixi-lights/issues"
   },
   "scripts": {
-    "build": "gulp build",
-    "start": "hs . -o",
-    "docs": "./node_modules/.bin/jsdoc -c ./gulp/util/jsdoc.conf.json"
+    "postinstall": "npm run copy",
+    "clean": "rimraf lib/* docs/*",
+    "test": "npm run build",
+    "prebuild": "npm run clean",
+    "build": "cross-env NODE_ENV=\"production\" rollup -c",
+    "watch": "cross-env NODE_ENV=\"development\" rollup -cw",
+    "lint": "eslint --fix src",
+    "docs": "jsdoc -c ./jsdoc.conf.json -R README.md",
+    "dev": "http-server . -o",
+    "postversion": "npm run build",
+    "postpublish": "npm run deploy",
+    "predeploy": "npm run docs",
+    "copy": "copyfiles -f \"node_modules/{pixi.js,pixi-layers}/dist/*.{js,map}\" demo/lib",
+    "deploy": "gh-pages -d . -s \"{demo,docs,lib}/**\"",
+    "start": "parallelshell \"npm run watch\" \"npm run dev\""
   },
   "engines": {
-    "node": ">=0.10.0"
+    "node": ">=6"
   },
   "keywords": [
     "2d",
     "pixi"
   ],
+  "files": [
+    "lib/*"
+  ],
   "peerDependencies": {
-    "pixi.js": "^3.0.7"
-  },
-  "dependencies": {
-    "brfs": "^1.4.0",
-    "glslify": "^2.2.1",
-    "glslify-import": "^1.0.0"
+    "pixi.js": "^4.7.0",
+    "pixi-layers": "^0.1.6"
   },
   "devDependencies": {
-    "browserify": "^10.2.4",
-    "del": "^1.2.0",
-    "gulp": "^3.9.0",
-    "gulp-cached": "^1.1.0",
-    "gulp-jshint": "^1.11.0",
-    "gulp-mirror": "^0.4.0",
-    "gulp-plumber": "^1.0.1",
-    "gulp-rename": "^1.2.2",
-    "gulp-sourcemaps": "^1.5.2",
-    "gulp-uglify": "^1.2.0",
-    "gulp-util": "^3.0.6",
-    "http-server": "^0.8.0",
-    "jaguarjs-jsdoc": "git+https://github.com/davidshimjs/jaguarjs-jsdoc.git",
-    "jsdoc": "^3.3.2",
-    "jshint-summary": "^0.4.0",
-    "require-dir": "^0.3.0",
-    "run-sequence": "^1.1.1",
-    "vinyl-buffer": "^1.0.0",
-    "vinyl-source-stream": "^1.1.0",
-    "watchify": "^3.2.3"
-  },
-  "browserify": {
-    "transform": [
-      "brfs",
-      "glslify"
-    ]
-  },
-  "glslify": {
-    "transform": [
-      "glslify-import"
-    ]
+    "@pixi/jsdoc-template": "^2.4.0",
+    "copyfiles": "^2.0.0",
+    "cross-env": "^5.1.4",
+    "eslint": "^4.19.1",
+    "gh-pages": "^1.1.0",
+    "http-server": "^0.11.1",
+    "jsdoc": "^3.5.5",
+    "parallelshell": "^3.0.2",
+    "pixi-layers": "^0.1.7",
+    "pixi.js": "^4.7.1",
+    "rimraf": "^2.6.2",
+    "rollup": "^0.57.1",
+    "rollup-plugin-buble": "^0.19.2",
+    "rollup-plugin-conditional": "^1.1.1",
+    "rollup-plugin-eslint": "^4.0.0",
+    "rollup-plugin-string": "^2.0.2",
+    "rollup-plugin-uglify": "^3.0.0",
+    "uglify-es": "^3.3.9"
   }
 }

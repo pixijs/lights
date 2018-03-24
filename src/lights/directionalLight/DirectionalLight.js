@@ -1,4 +1,4 @@
-var Light = require('../light/Light');
+import Light from '../light/Light';
 
 /**
  * @class
@@ -9,45 +9,41 @@ var Light = require('../light/Light');
  * @param [brightness=1] {number} The intensity of the light.
  * @param [target] {PIXI.DisplayObject|PIXI.Point} The object in the scene to target.
  */
-function DirectionalLight(color, brightness, target) {
-    Light.call(this, color, brightness);
+export default class DirectionalLight extends Light {
+    constructor(color=0xFFFFFF, brightness=1, target) {
+        super(color, brightness);
 
-    this.target = target;
-    this._directionVector = new PIXI.Point();
+        this.target = target;
+        this._directionVector = new PIXI.Point();
+        this._updateTransform = Light.prototype.updateTransform;
+        this._syncShader = Light.prototype.syncShader;
+        this.shaderName = 'directionalLightShader';
+    }
 
-    this._updateTransform = Light.prototype.updateTransform;
-    this._syncShader = Light.prototype.syncShader;
+    updateTransform() {
+        this.containerUpdateTransform();
 
-    this.shaderName = 'directionalLightShader';
+        let vec = this._directionVector,
+            wt = this.worldTransform,
+            tx = this.target.worldTransform ? this.target.worldTransform.tx : this.target.x,
+            ty = this.target.worldTransform ? this.target.worldTransform.ty : this.target.y;
+
+        // calculate direction from this light to the target
+        vec.x = wt.tx - tx;
+        vec.y = wt.ty - ty;
+
+        // normalize
+        const len = Math.sqrt(vec.x * vec.x + vec.y * vec.y);
+        vec.x /= len;
+        vec.y /= len;
+    }
+
+    syncShader(shader) {
+        this._syncShader(shader);
+
+        const uLightDirection = shader.uniforms.uLightDirection;
+        uLightDirection[0] = this._directionVector.x;
+        uLightDirection[1] = this._directionVector.y;
+        shader.uniforms.uLightDirection = uLightDirection;
+    }
 }
-
-DirectionalLight.prototype = Object.create(Light.prototype);
-DirectionalLight.prototype.constructor = DirectionalLight;
-module.exports = DirectionalLight;
-
-DirectionalLight.prototype.updateTransform = function () {
-    this.containerUpdateTransform();
-
-    var vec = this._directionVector,
-        wt = this.worldTransform,
-        tx = this.target.worldTransform ? this.target.worldTransform.tx : this.target.x,
-        ty = this.target.worldTransform ? this.target.worldTransform.ty : this.target.y;
-
-    // calculate direction from this light to the target
-    vec.x = wt.tx - tx;
-    vec.y = wt.ty - ty;
-
-    // normalize
-    var len = Math.sqrt(vec.x * vec.x + vec.y * vec.y);
-    vec.x /= len;
-    vec.y /= len;
-};
-
-DirectionalLight.prototype.syncShader = function (shader) {
-    this._syncShader(shader);
-
-    var uLightDirection = shader.uniforms.uLightDirection;
-    uLightDirection[0] = this._directionVector.x;
-    uLightDirection[1] = this._directionVector.y;
-    shader.uniforms.uLightDirection = uLightDirection;
-};

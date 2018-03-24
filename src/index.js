@@ -1,23 +1,12 @@
-PIXI.lights = {
-    Light:                  require('./lights/light/Light'),
-    LightShader:            require('./lights/light/LightShader'),
-
-    AmbientLight:           require('./lights/ambientLight/AmbientLight'),
-    AmbientLightShader:     require('./lights/ambientLight/AmbientLightShader'),
-
-    PointLight:             require('./lights/pointLight/PointLight'),
-    PointLightShader:       require('./lights/pointLight/PointLightShader'),
-
-    DirectionalLight:             require('./lights/directionalLight/DirectionalLight'),
-    DirectionalLightShader:       require('./lights/directionalLight/DirectionalLightShader'),
-
-    LightRenderer:          require('./renderers/LightRenderer'),
-
-    WireframeShader:        require('./lights/WireframeShader')
-};
-
-Object.assign(PIXI.lights, require('./main'));
-
-module.exports = PIXI.lights;
-
-require('./shapeMeshMixin');
+import './mixins/Circle';
+export { default as Light } from './lights/light/Light';
+export { default as LightShader } from './lights/light/LightShader';
+export { default as AmbientLight } from './lights/ambientLight/AmbientLight';
+export { default as AmbientLightShader } from './lights/ambientLight/AmbientLightShader';
+export { default as PointLight } from './lights/pointLight/PointLight';
+export { default as PointLightShader } from './lights/pointLight/PointLightShader';
+export { default as DirectionalLight } from './lights/directionalLight/DirectionalLight';
+export { default as DirectionalLightShader } from './lights/directionalLight/DirectionalLightShader';
+export { default as LightRenderer } from './renderers/LightRenderer';
+export { default as WireframeShader } from './lights/wireframe/WireframeShader';
+export * from './main';
