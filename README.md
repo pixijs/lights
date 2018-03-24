@@ -28,56 +28,34 @@ and v0.1.6 (or higher) of [pixi-layers](https://github.com/pixijs/pixi-display).
 
 [Example](http://pixijs.io/examples/#/layers/normals.js)
 
-You have to create three layers: one for sprites, one for their normals and one for lights. Sprites and normals are rendered to temporary RenderTexture, and lights have those two textures as an input.  
-
+You have to create three layers: one for sprites, one for their normals and one for lights. Sprites and normals are rendered to temporary RenderTexture, and lights have those two textures as an input.
+ 
 ```js
 var WIDTH = 800, HEIGHT = 600;
-
-var app = new PIXI.Application(WIDTH, HEIGHT);
+// Black background is requirement!
+var app = new PIXI.Application(WIDTH, HEIGHT, {backgroundColor: 0x000000 });
 document.body.appendChild(app.view);
 
 var stage = app.stage = new PIXI.display.Stage();
-var light = new PIXI.lights.PointLight(0xffffff, 1);
 
 // put all layers for deferred rendering of normals
 stage.addChild(new PIXI.display.Layer(PIXI.lights.diffuseGroup));
 stage.addChild(new PIXI.display.Layer(PIXI.lights.normalGroup));
 stage.addChild(new PIXI.display.Layer(PIXI.lights.lightGroup));
 
-PIXI.loader.baseUrl = 'https://cdn.rawgit.com/pixijs/pixi-lights/b7fd7924fdf4e6a6b913ff29161402e7b36f0c0f/';
+// adding big lighted element
+var bgDiffuse = new PIXI.Sprite(PIXI.Texture.fromImage('test/BGTextureTest.jpg'));
+bgDiffuse.parentGroup = PIXI.lights.diffuseGroup;
+var bgNormals = new PIXI.Sprite(PIXI.Texture.fromImage('test/BGTextureNORM.jpg'));
+bgNormals.parentGroup = PIXI.lights.normalGroup;
+var bg = new PIXI.Container();
+bg.addChild(bgNormals, bgDiffuse);
 
-PIXI.loader
-    .add('bg_diffuse', 'test/BGTextureTest.jpg')
-    .add('bg_normal', 'test/BGTextureNORM.jpg')
-    .load(onAssetsLoaded);
-
-function createPair(diffuseTex, normalTex) {
-    var container = new PIXI.Container();
-    var diffuseSprite = new PIXI.Sprite(diffuseTex);
-    diffuseSprite.parentGroup = PIXI.lights.diffuseGroup;
-    var normalSprite = new PIXI.Sprite(normalTex);
-    normalSprite.parentGroup = PIXI.lights.normalGroup;
-    container.addChild(diffuseSprite);
-    container.addChild(normalSprite);
-    return container;
-}
-
-function onAssetsLoaded(loader, res) {
-    var bg = createPair(res.bg_diffuse.texture, res.bg_normal.texture);
-    light.position.set(525, 160);
-    
-    //add more lights if needed
-    bg.interactive = true;
-    bg.on('mousemove', function (event) {
-        light.position.copy(event.data.global);
-    });
-
-    bg.on('pointerdown', function (event) {
-        var clickLight = new PIXI.lights.PointLight(0xffffff);
-        clickLight.position.copy(event.data.global);
-        stage.addChild(clickLight);
-    });
-}
+//adding a light
+var light = new PIXI.lights.PointLight(0xffffff, 1);
+stage.addChild(bg);
+light.position.set(525, 160);
+bg.addChild(light);
 
 ```
 
