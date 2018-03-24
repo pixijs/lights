@@ -21,6 +21,7 @@
   "scripts": {
     "postinstall": "npm run copy",
     "clean": "rimraf lib/* docs/*",
+    "test": "npm run build",
     "prebuild": "npm run clean",
     "build": "cross-env NODE_ENV=\"production\" rollup -c",
     "watch": "cross-env NODE_ENV=\"development\" rollup -cw",
