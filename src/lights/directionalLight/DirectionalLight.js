@@ -15,8 +15,6 @@ export default class DirectionalLight extends Light {
 
         this.target = target;
         this._directionVector = new PIXI.Point();
-        this._updateTransform = Light.prototype.updateTransform;
-        this._syncShader = Light.prototype.syncShader;
         this.shaderName = 'directionalLightShader';
     }
 
@@ -39,7 +37,7 @@ export default class DirectionalLight extends Light {
     }
 
     syncShader(shader) {
-        this._syncShader(shader);
+        super.syncShader(shader);
 
         const uLightDirection = shader.uniforms.uLightDirection;
         uLightDirection[0] = this._directionVector.x;

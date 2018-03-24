@@ -1,9 +1,10 @@
 {
   "name": "pixi-lights",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A plugin that adds deferred lighting to Pixi.js",
   "license": "MIT",
   "main": "./lib/pixi-lights.js",
+  "types": "./pixi-layers.d.ts",
   "module": "./lib/pixi-lights.es.js",
   "author": "Chad Engler <chad@pantherdev.com>",
   "contributors": [
@@ -43,7 +44,10 @@
     "pixi"
   ],
   "files": [
-    "lib/*"
+    "lib/",
+    "pixi-lights.d.ts",
+    "README.md",
+    "package.json"
   ],
   "peerDependencies": {
     "pixi.js": "^4.5.0",
