@@ -2,61 +2,69 @@
 
 [![Build Status](https://travis-ci.org/pixijs/pixi-lights.svg?branch=master)](https://travis-ci.org/pixijs/pixi-lights)
 
-A plugin that adds deferred lighting to Pixi.js
+A plugin that adds deferred lighting to PixiJS.
 
-**Note**: This modules *requires* v4.7.1 (or higher) of [pixi.js](https://github.com/pixijs/pixi.js)
-and v0.1.6 (or higher) of [pixi-layers](https://github.com/pixijs/pixi-display).
+**Note**: This modules *requires* v4.5.0+ of [pixi.js](https://github.com/pixijs/pixi.js) and v0.1.6 of [pixi-layers](https://github.com/pixijs/pixi-display).
 
 * [Demo](http://pixijs.io/pixi-lights/demo/index.html)
 * [Documentation](http://pixijs.io/pixi-lights/docs/index.html)
 
-### WARNING: Experimental
-
-@xerver: This module is experimental and unoptimized, I do not consider it "production ready" yet.
-@ivanpopelyshev: I approve it for production
-
-## Roadmap
-
-1. More lighting types, left are:
- - Spot lights
- - Hemisphere lights
- - Area lights
-2. Add dynamic shadows
-3. Write tests!
-
 ## Usage
 
-[Example](http://pixijs.io/examples/#/layers/normals.js)
+[Example](http://pixijs.io/pixi-lights/demo/usage.html)
 
 You have to create three layers: one for sprites, one for their normals and one for lights. Sprites and normals are rendered to temporary RenderTexture, and lights have those two textures as an input.
  
 ```js
-var WIDTH = 800, HEIGHT = 600;
-// Black background is requirement!
-var app = new PIXI.Application(WIDTH, HEIGHT, {backgroundColor: 0x000000 });
+import 'pixi.js';
+import 'pixi-layers';
+import 'pixi-lights';
+
+// Get class references
+const {Application, Sprite, Container, lights, display} = PIXI;
+const {diffuseGroup, normalGroup, lightGroup} = lights;
+const {Layer, Stage} = display;
+
+// Create new application
+const app = new Application({
+    backgroundColor: 0x000000, // Black is required!
+    width: 800,
+    height: 600
+});
 document.body.appendChild(app.view);
 
-var stage = app.stage = new PIXI.display.Stage();
+// Use the pixi-layers Stage instead of default Container
+app.stage = new Stage();
 
-// put all layers for deferred rendering of normals
-stage.addChild(new PIXI.display.Layer(PIXI.lights.diffuseGroup));
-stage.addChild(new PIXI.display.Layer(PIXI.lights.normalGroup));
-stage.addChild(new PIXI.display.Layer(PIXI.lights.lightGroup));
+// Add the background diffuse color
+const diffuse = Sprite.fromImage('images/BGTextureTest.jpg');
+diffuse.parentGroup = diffuseGroup;
 
-// adding big lighted element
-var bgDiffuse = new PIXI.Sprite(PIXI.Texture.fromImage('test/BGTextureTest.jpg'));
-bgDiffuse.parentGroup = PIXI.lights.diffuseGroup;
-var bgNormals = new PIXI.Sprite(PIXI.Texture.fromImage('test/BGTextureNORM.jpg'));
-bgNormals.parentGroup = PIXI.lights.normalGroup;
-var bg = new PIXI.Container();
-bg.addChild(bgNormals, bgDiffuse);
+// Add the background normal map
+const normals = Sprite.fromImage('images/BGTextureNORM.jpg');
+normals.parentGroup = normalGroup;
 
-//adding a light
-var light = new PIXI.lights.PointLight(0xffffff, 1);
-stage.addChild(bg);
-light.position.set(525, 160);
-bg.addChild(light);
+// Create the point light
+const light = new PIXI.lights.PointLight(0xffffff, 1);
+light.x = app.screen.width / 2;
+light.y = app.screen.height / 2;
 
+// Create a background container 
+const background = new Container();
+background.addChild(
+    normals,
+    diffuse,
+    light
+);
+
+app.stage.addChild(
+    // put all layers for deferred rendering of normals
+    new Layer(diffuseGroup),
+    new Layer(normalGroup),
+    new Layer(lightGroup),
+    // Add the lights and images
+    background
+);
 ```
 
 ## Building
@@ -75,3 +83,12 @@ npm i && npm run build
 That will output the built distributables to `./lib`.
 
 [node]:       http://nodejs.org/
+
+## Roadmap
+
+1. More lighting types, left are:
+ - Spot lights
+ - Hemisphere lights
+ - Area lights
+2. Add dynamic shadows
+3. Write tests!

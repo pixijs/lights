@@ -45,9 +45,7 @@
   ],
   "files": [
     "lib/",
-    "pixi-lights.d.ts",
-    "README.md",
-    "package.json"
+    "pixi-lights.d.ts"
   ],
   "peerDependencies": {
     "pixi.js": "^4.5.0",
