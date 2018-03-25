@@ -4,7 +4,7 @@
   "description": "A plugin that adds deferred lighting to Pixi.js",
   "license": "MIT",
   "main": "./lib/pixi-lights.js",
-  "types": "./pixi-layers.d.ts",
+  "types": "./pixi-lights.d.ts",
   "module": "./lib/pixi-lights.es.js",
   "author": "Chad Engler <chad@pantherdev.com>",
   "contributors": [
