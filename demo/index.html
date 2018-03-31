@@ -76,7 +76,7 @@
                 stage.addChild(light);
 
                 bg.interactive = true;
-                bg.on('mousemove', function (event) {
+                bg.on('pointermove', function (event) {
                     light.position.copy(event.data.global);
                 });
 
