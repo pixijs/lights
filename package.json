@@ -53,7 +53,6 @@
   },
   "devDependencies": {
     "@pixi/jsdoc-template": "^2.4.0",
-    "copyfiles": "^2.0.0",
     "cross-env": "^5.1.4",
     "eslint": "^4.19.1",
     "gh-pages": "^1.1.0",
@@ -70,5 +69,8 @@
     "rollup-plugin-string": "^2.0.2",
     "rollup-plugin-uglify": "^3.0.0",
     "uglify-es": "^3.3.9"
+  },
+  "dependencies": {
+    "copyfiles": "^2.0.0"
   }
 }
