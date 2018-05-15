@@ -6,12 +6,12 @@ A plugin that adds deferred lighting to PixiJS.
 
 **Note**: This modules *requires* v4.5.0+ of [pixi.js](https://github.com/pixijs/pixi.js) and v0.1.6 of [pixi-layers](https://github.com/pixijs/pixi-display).
 
-* [Demo](http://pixijs.io/pixi-lights/demo/index.html)
-* [Documentation](http://pixijs.io/pixi-lights/docs/index.html)
+* [Demo](https://pixijs.io/pixi-lights/demo/index.html)
+* [Documentation](https://pixijs.io/pixi-lights/docs/index.html)
 
 ## Usage
 
-[Example](http://pixijs.io/pixi-lights/demo/usage.html)
+[Example](https://pixijs.io/pixi-lights/demo/usage.html)
 
 You have to create three layers: one for sprites, one for their normals and one for lights. Sprites and normals are rendered to temporary RenderTexture, and lights have those two textures as an input.
  
