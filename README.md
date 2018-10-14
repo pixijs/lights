@@ -67,6 +67,15 @@ app.stage.addChild(
 );
 ```
 
+### Filters
+
+If you want to use light shaders inside a filter, make sure its full-screen:
+
+```js
+app.stage.filters = [new PIXI.filters.BlurFilter()];
+app.stage.filterArea = app.screen;
+```
+
 ## Building
 
 You normally don't need to build this module, you can just download a release from the releases page.

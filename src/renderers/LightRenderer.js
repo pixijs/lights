@@ -151,6 +151,7 @@ export default class LightRenderer extends PIXI.ObjectRenderer {
                 uViewSize[0] = renderer.screen.width;
                 uViewSize[1] = renderer.screen.height;
                 shader.uniforms.uViewSize = uViewSize;
+                shader.uniforms.uFlipY = renderer._activeRenderTarget.root ? 1.0 : 0.0;
             }
 
             renderer.bindVao(glData.vao);
