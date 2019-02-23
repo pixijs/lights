@@ -148,9 +148,19 @@ export default class LightRenderer extends PIXI.ObjectRenderer {
                 shader.uniforms.uNormalSampler = 1;
 
                 let uViewSize = shader.uniforms.uViewSize;
-                uViewSize[0] = renderer.screen.width;
-                uViewSize[1] = renderer.screen.height;
-                shader.uniforms.uViewSize = uViewSize;
+                if (uViewSize) {
+                    uViewSize[0] = renderer.screen.width;
+                    uViewSize[1] = renderer.screen.height;
+                    shader.uniforms.uViewSize = uViewSize;
+                }
+
+                let uViewPixels = shader.uniforms.uViewPixels;
+                if (uViewPixels) {
+                    uViewPixels[0] = renderer.view.width;
+                    uViewPixels[1] = renderer.view.height;
+                    shader.uniforms.uViewPixels = uViewPixels;
+                }
+
                 shader.uniforms.uFlipY = renderer._activeRenderTarget.root ? 1.0 : 0.0;
             }
 

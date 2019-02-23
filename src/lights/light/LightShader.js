@@ -19,8 +19,10 @@ export default class LightShader extends PIXI.Shader {
             // should we apply the translation matrix or not.
             uUseViewportQuad: { type: 'bool', value: true },
 
-            // size of the renderer viewport
+            // size of the renderer viewport, CSS
             uViewSize:      { type: '2f', value: new Float32Array(2) },
+            //same, in PIXELS
+            uViewPixels:    { type: '2f', value: new Float32Array(2) },
 
             // light color, alpha channel used for intensity.
             uLightColor:    { type: '4f', value: new Float32Array([1, 1, 1, 1]) },
