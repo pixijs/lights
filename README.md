@@ -8,20 +8,13 @@ A plugin that adds deferred lighting to PixiJS.
 
 For pixi-v4 see `v4.x` branch.
 
-* [Demo](https://pixijs.io/pixi-lights/demo/index.html)
-* [Documentation](https://pixijs.io/pixi-lights/docs/index.html)
+* [Demo](https://pixijs.io/examples/#/plugin-layers/normals.js)
 
 ## Usage
-
-[Example](https://pixijs.io/pixi-lights/demo/usage.html)
 
 You have to create three layers: one for sprites, one for their normals and one for lights. Sprites and normals are rendered to temporary RenderTexture, and lights have those two textures as an input.
  
 ```js
-import 'pixi.js';
-import 'pixi-layers';
-import 'pixi-lights';
-
 // Get class references
 import {Application, Sprite, Container, lights} from 'pixi.js';
 import {Layer, Stage} from '@pixi/layers';
@@ -78,6 +71,18 @@ app.stage.filters = [new BlurFilter()];
 app.stage.filterArea = app.screen;
 ```
 
+## Vanilla JS, UMD build
+
+All pixiJS v6 plugins has special `umd` build suited for vanilla.
+Navigate `pixi-lights` npm package, take `dist/pixi-lights.umd.js` file.
+
+```html
+<script src='lib/pixi.js'></script>
+<script src='lib/pixi-lights.umd.js'></script>
+```
+
+all classes can be accessed through `PIXI.lights` package.
+
 ## Building
 
 You normally don't need to build this module, you can just download a release from the releases page.
@@ -91,7 +96,7 @@ Then you can install dependencies and build:
 npm i && npm run build
 ```
 
-That will output the built distributables to `./lib`.
+That will output the built distributables to `./lib` and `./dist`.
 
 [node]:       http://nodejs.org/
 

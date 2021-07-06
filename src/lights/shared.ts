@@ -15,6 +15,7 @@ uniform vec2 uViewPixels;   // size of the viewport, in pixels
 uniform vec2 uViewSize;     // size of the viewport, in CSS
 
 uniform vec4 uColor;   // light color, alpha channel used for intensity.
+uniform float uBrightness;
 uniform vec3 uLightFalloff; // light attenuation coefficients (constant, linear, quadratic)
 uniform float uLightHeight; // light height above the viewport
 uniform float uFlipY;             // whether we use renderTexture, FBO is flipped
@@ -26,7 +27,7 @@ vec3 L = normalize(lightVector);
 
 // pre-multiply light color with intensity
 // then perform "N dot L" to determine our diffuse
-vec3 diffuse = (uLightColor.rgb * uColor.a) * max(dot(N, L), 0.0);
+vec3 diffuse = uColor.rgb * uBrightness * max(dot(N, L), 0.0);
 `;
 
 export const computeVertexPosition: string = `vec2 texCoord = gl_FragCoord.xy / uViewPixels;
@@ -42,11 +43,17 @@ if (normalColor.a == 0.0) discard;
 
 export const vert: string = `attribute vec2 aVertexPosition;
 
-uniform mat3 projectionMatrix;
+uniform bool uUseViewportQuad;
 uniform mat3 translationMatrix;
+uniform mat3 projectionMatrix;
 
-void main(void)
-{
-    gl_Position = vec4((projectionMatrix * translationMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);
+void main(void) {
+    if (uUseViewportQuad) {
+        gl_Position = vec4((projectionMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);
+    }
+    else
+    {
+        gl_Position = vec4((projectionMatrix * translationMatrix * vec3(aVertexPosition, 1.0)).xy, 0.0, 1.0);
+    }
 }
 `;

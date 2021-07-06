@@ -27,8 +27,8 @@ export function getCircleMesh(shape: Circle, totalSegments = 40, vertices?: Floa
         const index = i * 2;
         const angle = seg * i;
 
-        vertices[index] = Math.cos(angle) * this.radius;
-        vertices[index + 1] = Math.sin(angle) * this.radius;
+        vertices[index] = Math.cos(angle) * shape.radius;
+        vertices[index + 1] = Math.sin(angle) * shape.radius;
 
         indices[++indicesIndex] = indicesIndex;
     }

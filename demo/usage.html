@@ -40,15 +40,15 @@
             app.stage = new Stage();
 
             // Add the background diffuse color
-            const diffuse = Sprite.fromImage('images/BGTextureTest.jpg');
+            const diffuse = Sprite.from('images/BGTextureTest.jpg');
             diffuse.parentGroup = diffuseGroup;
 
             // Add the background normal map
-            const normals = Sprite.fromImage('images/BGTextureNORM.jpg');
+            const normals = Sprite.from('images/BGTextureNORM.jpg');
             normals.parentGroup = normalGroup;
 
             // Create the point light
-            const light = new PIXI.lights.PointLight(0xffffff, 1);
+            const light = new PIXI.lights.PointLight(0xffffff, 1, 200);
             light.x = app.screen.width / 2;
             light.y = app.screen.height / 2;
 

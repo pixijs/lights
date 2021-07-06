@@ -17,6 +17,7 @@ import { ViewportQuad } from './ViewportQuad';
 export class Light extends Mesh
 {
     lightHeight: number;
+    brightness: number;
     shaderName: string;
     readonly useViewportQuad: boolean;
 
@@ -40,7 +41,7 @@ export class Light extends Mesh
 
         this.blendMode = BLEND_MODES.ADD;
 
-        this.drawMode = DRAW_MODES.TRIANGLES;
+        this.drawMode = useViewportQuad ? DRAW_MODES.TRIANGLE_STRIP : DRAW_MODES.TRIANGLES;
 
         /**
          * The height of the light from the viewport.
@@ -63,9 +64,15 @@ export class Light extends Mesh
          */
         this.useViewportQuad = useViewportQuad;
 
+        // compatibility with old version and its ols bugs :)
+        if (color === null)
+        {
+            color = 0x4d4d59;
+        }
+
         // color and brightness are exposed through setters
         this.tint = color;
-        this.alpha = brightness;
+        this.brightness = brightness;
         this.parentGroup = lightGroup;
     }
 
@@ -96,21 +103,6 @@ export class Light extends Mesh
         this.material.uniforms.uLightFalloff[2] = value[2];
     }
 
-    /**
-     * The brightness of this lighting. Normalized in the range [0, 1].
-     *
-     * @member {number}
-     * @memberof Light#
-     */
-    get brightness(): number
-    {
-        return this.alpha;
-    }
-    set brightness(val: number)
-    {
-        this.alpha = val;
-    }
-
     lastLayer: Layer;
 
     syncShader(renderer: Renderer): void
@@ -125,11 +117,13 @@ export class Light extends Mesh
         uniforms.uFlipY = !renderer.framebuffer.current;
         uniforms.uSampler = LayerFinder._instance.diffuseTexture;
         uniforms.uNormalSampler = LayerFinder._instance.normalTexture;
+        uniforms.uUseViewportQuad = this.useViewportQuad;
+        uniforms.uBrightness = this.brightness;
     }
 
     _renderDefault(renderer: Renderer): void
     {
-        if (this._activeParentLayer)
+        if (!this._activeParentLayer)
         {
             return;
         }
@@ -145,11 +139,8 @@ export class Light extends Mesh
 
         renderer.batch.flush();
 
-        if (!this.useViewportQuad)
-        {
-            shader.uniforms.translationMatrix = this.transform.worldTransform.toArray(true);
-        }
-        else
+        shader.uniforms.translationMatrix = this.transform.worldTransform.toArray(true);
+        if (this.useViewportQuad)
         {
             // TODO: pass the viewport (translated screen) instead
             (this.geometry as ViewportQuad).update(renderer.screen);

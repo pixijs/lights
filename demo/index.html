@@ -22,8 +22,7 @@
     </head>
     <body>
         <script src="https://pixijs.download/dev/pixi.js"></script>
-<!--        <script src="../node_modules/@pixi/layers/dist/pixi-layers.umd.js"></script>-->
-        <script src="pixi-layers.umd.js"></script>
+        <script src="../node_modules/@pixi/layers/dist/pixi-layers.umd.js"></script>
         <script src="../dist/pixi-lights.umd.js"></script>
         <script>
 
@@ -74,8 +73,8 @@
                 stage.addChild(block1);
                 stage.addChild(block2);
 
-                stage.addChild(new PIXI.lights.AmbientLight(null, 0.4));
-                stage.addChild(new PIXI.lights.DirectionalLight(null, 1, block1));
+                stage.addChild(new PIXI.lights.AmbientLight(0x4d4d59, 0.4));
+                stage.addChild(new PIXI.lights.DirectionalLight(0x4d4d59, 1, block1));
                 stage.addChild(light);
 
                 bg.interactive = true;

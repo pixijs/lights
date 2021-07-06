@@ -25,7 +25,9 @@ export class LightShader extends MeshMaterial
             // light falloff attenuation coefficients
             uLightFalloff: new Float32Array([0, 0, 0]),
             // height of the light above the viewport
-            uLightHeight: 0.075
+            uLightHeight: 0.075,
+            uBrightness: 1.0,
+            uUseViewportQuad: true,
         };
 
         if (options.uniforms)

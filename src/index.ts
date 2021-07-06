@@ -1,7 +1,3 @@
-/* eslint-disable spaced-comment */
-// eslint-disable-next-line @typescript-eslint/triple-slash-reference
-/// <reference path="../global.d.ts" />
-
 import './mixins/Circle';
 export * from './lights/light/Light';
 export * from './lights/light/LightShader';
