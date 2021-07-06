@@ -14,7 +14,7 @@ ${loadNormals}
     vec3 diffuse = uLightColor.rgb * uLightColor.a;
     vec4 diffuseColor = texture2D(uSampler, texCoord);
     vec3 finalColor = diffuseColor.rgb * diffuse;
-    
+
     gl_FragColor = vec4(finalColor, diffuseColor.a);
 }
 `;

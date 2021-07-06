@@ -1,34 +1,34 @@
-/**
- * Contains mixins for the `PIXI.Circle` class.
- * @class Circle
- * @memberof PIXI
- * @see http://pixijs.download/release/docs/PIXI.Circle.html
- */
+import { Circle } from '@pixi/math';
+
 /**
  * Creates vertices and indices arrays to describe this circle.
  * @method PIXI.Circle#getMesh
+ * @param shape
  * @param [totalSegments=40] {number} Total segments to build for the circle mesh.
- * @param [verticesOutput] {Float32Array} An array to output the vertices into. Length must be
+ * @param vertices
+ * @param indices
  *  `((totalSegments + 2) * 2)` or more. If not passed it is created for you.
- * @param [indicesOutput] {Uint16Array} An array to output the indices into, in gl.TRIANGLE_FAN format. Length must
  *  be `(totalSegments + 3)` or more. If not passed it is created for you.
  * @return {PIXI.Circle~MeshData} Object with verticies and indices arrays
  */
-PIXI.Circle.prototype.getMesh = function getMesh(totalSegments = 40, vertices, indices) {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export function getCircleMesh(shape: Circle, totalSegments = 40, vertices?: Float32Array, indices?: Uint16Array)
+{
     vertices = vertices || new Float32Array((totalSegments + 1) * 2);
     indices = indices || new Uint16Array(totalSegments + 1);
 
-    let seg = (Math.PI * 2) / totalSegments,
-        indicesIndex = -1;
+    const seg = (Math.PI * 2) / totalSegments;
+    let indicesIndex = -1;
 
     indices[++indicesIndex] = indicesIndex;
 
-    for (let i = 0; i <= totalSegments; ++i) {
-        let index = i*2;
-        let angle = seg * i;
+    for (let i = 0; i <= totalSegments; ++i)
+    {
+        const index = i * 2;
+        const angle = seg * i;
 
         vertices[index] = Math.cos(angle) * this.radius;
-        vertices[index+1] = Math.sin(angle) * this.radius;
+        vertices[index + 1] = Math.sin(angle) * this.radius;
 
         indices[++indicesIndex] = indicesIndex;
     }
@@ -36,7 +36,7 @@ PIXI.Circle.prototype.getMesh = function getMesh(totalSegments = 40, vertices, i
     indices[indicesIndex] = 1;
 
     return { vertices, indices };
-};
+}
 
 /**
  * @typedef PIXI.Circle~MeshData

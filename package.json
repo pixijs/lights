@@ -1,73 +1,104 @@
 {
   "name": "pixi-lights",
-  "version": "2.0.3",
-  "description": "A plugin that adds deferred lighting to Pixi.js",
-  "license": "MIT",
-  "main": "./lib/pixi-lights.js",
-  "types": "./pixi-lights.d.ts",
-  "module": "./lib/pixi-lights.es.js",
-  "author": "Chad Engler <chad@pantherdev.com>",
+  "version": "3.0.0",
+  "description": "A plugin that adds deferred lighting to PixiJS v6",
+  "author": "Ivan Popelyshev",
   "contributors": [
-    "Matt Karl <matt@mattkarl.com>",
-    "Ivan Popelyshev <ivanpopelyshev@gmail.com>"
+    "Ivan Popelyshev <ivan.popelyshev@gmail.com>"
   ],
-  "homepage": "https://github.com/pixijs/pixi-lights",
+  "main": "./dist/pixi-lights.js",
+  "module": "./lib/pixi-lights.es.js",
+  "bundle": "./dist/pixi-lights.umd.js",
+  "namespace": "PIXI.smooth",
+  "types": "./index.d.ts",
+  "homepage": "http://www.pixijs.com/",
+  "bugs": "https://github.com/pixijs/pixi-lights/issues",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/pixijs/pixi-lights.git"
   },
-  "bugs": {
-    "url": "https://github.com/pixijs/pixi-lights/issues"
-  },
   "scripts": {
-    "clean": "rimraf lib/* docs/*",
-    "test": "npm run build",
-    "prebuild": "npm run clean",
-    "build": "cross-env NODE_ENV=\"production\" rollup -c",
-    "watch": "cross-env NODE_ENV=\"development\" rollup -cw",
-    "lint": "eslint --fix src",
-    "docs": "jsdoc -c ./jsdoc.conf.json -R README.md",
-    "dev": "http-server . -o",
-    "postversion": "npm run build",
-    "postpublish": "npm run deploy",
-    "predeploy": "npm run copy && npm run docs",
-    "copy": "copyfiles -f \"node_modules/{pixi.js,pixi-layers}/dist/*.{js,map}\" demo/lib",
-    "deploy": "gh-pages -d . -s \"{demo,docs,lib}/**\"",
-    "start": "parallelshell \"npm run watch\" \"npm run dev\""
+    "clean": "rimraf dist/* lib/* compile",
+    "start": "run-s watch",
+    "watch": "rollup -cw scripts/rollup.config.js",
+    "prebuild": "run-s clean lint types",
+    "build": "rollup -c scripts/rollup.config.js",
+    "postbuild": "run-s build:types",
+    "build:prod": "cross-env NODE_ENV=production run-s build",
+    "prebuild:types": "rimraf compile",
+    "build:types": "tsc --outDir compile && api-extractor run",
+    "lint": "eslint ./src",
+    "types": "tsc -noEmit",
+    "release:patch": "npm version patch && npm publish",
+    "release:minor": "npm version minor && npm publish",
+    "release:major": "npm version major && npm publish",
+    "postversion": "run-s build:prod",
+    "postpublish": "git push && git push --tags",
+    "prepack": "clean-package",
+    "postpack": "clean-package restore"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "engines": {
-    "node": ">=6"
+    "node": ">=14",
+    "npm": ">=7"
   },
-  "keywords": [
-    "2d",
-    "pixi"
-  ],
+  "clean-package": {
+    "indent": 2,
+    "remove": [
+      "clean-package",
+      "scripts",
+      "engines",
+      "devDependencies",
+      "eslintConfig"
+    ]
+  },
+  "eslintConfig": {
+    "extends": [
+      "@pixi/eslint-config"
+    ]
+  },
   "files": [
+    "dist/",
     "lib/",
-    "pixi-lights.d.ts"
+    "index.d.ts",
+    "LICENSE",
+    "package.json",
+    "README.md"
   ],
   "peerDependencies": {
-    "pixi.js": "^4.5.0",
-    "pixi-layers": "^0.1.6"
+    "@pixi/constants": "^6.0.4",
+    "@pixi/core": "^6.0.4",
+    "@pixi/display": "^6.0.4",
+    "@pixi/math": "^6.0.4",
+    "@pixi/mesh": "^6.0.4",
+    "@pixi/utils": "^6.0.4"
   },
   "devDependencies": {
-    "@pixi/jsdoc-template": "^2.4.0",
-    "copyfiles": "^2.0.0",
-    "cross-env": "^5.1.4",
-    "eslint": "^4.19.1",
-    "gh-pages": "^1.1.0",
-    "http-server": "^0.11.1",
-    "jsdoc": "^3.5.5",
-    "parallelshell": "^3.0.2",
-    "pixi-layers": "^0.1.7",
-    "pixi.js": "^4.7.1",
-    "rimraf": "^2.6.2",
-    "rollup": "^0.57.1",
-    "rollup-plugin-buble": "^0.19.2",
-    "rollup-plugin-conditional": "^1.1.1",
-    "rollup-plugin-eslint": "^4.0.0",
-    "rollup-plugin-string": "^2.0.2",
-    "rollup-plugin-uglify": "^3.0.0",
-    "uglify-es": "^3.3.9"
+    "@microsoft/api-extractor": "7.17.1",
+    "@pixi-build-tools/rollup-configurator": "~1.0.11",
+    "@pixi/constants": "^6.0.4",
+    "@pixi/core": "^6.0.4",
+    "@pixi/display": "^6.0.4",
+    "@pixi/eslint-config": "^2.0.1",
+    "@pixi/math": "^6.0.4",
+    "@pixi/mesh": "^6.0.4",
+    "@pixi/utils": "^6.0.4",
+    "@pixi/layers": "^1.0.5",
+    "@typescript-eslint/eslint-plugin": "^4.16.1",
+    "@typescript-eslint/parser": "^4.16.1",
+    "clean-package": "^1.0.1",
+    "cross-env": "^7.0.3",
+    "eslint": "^7.21.0",
+    "npm-run-all": "^4.1.5",
+    "rimraf": "^2.5.3",
+    "rollup": "^2.50.5",
+    "rollup-plugin-sourcemaps": "^0.6.2",
+    "rollup-plugin-terser": "^7.0.0",
+    "@rollup/plugin-typescript": "^8.2.1",
+    "tslib": "^2.0.1",
+    "typescript": "^4.3.2"
   }
 }

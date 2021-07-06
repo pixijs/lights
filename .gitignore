@@ -1,18 +1,20 @@
-# Idea
-.idea
-
-# Sublime Text files
+# sublime text files
 *.sublime*
 *.*~*.TMP
 
-# OS temp files
+# temp files
 .DS_Store
 Thumbs.db
 Desktop.ini
-
-# Tool temp files
 npm-debug.log
+
+# project files
+.project
+
+# vim swap files
 *.sw*
+
+# emacs temp files
 *~
 \#*#
 
@@ -20,6 +22,13 @@ npm-debug.log
 !.gitkeep
 *__temp
 node_modules
-docs
+docs/
+
+# jetBrains IDE ignores
+.idea
+
+# tsc output
+compile
+dist
 lib
-demo/lib
+index.d.ts

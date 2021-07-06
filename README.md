@@ -1,10 +1,12 @@
 # PixiJS Lights
 
-[![Build Status](https://travis-ci.org/pixijs/pixi-lights.svg?branch=master)](https://travis-ci.org/pixijs/pixi-lights)
+[![Build](https://github.com/pixijs/pixi-lights/workflows/Build/badge.svg)](https://github.com/pixijs/pixi-lights/actions?query=workflow%3A%22Build%22) [![npm version](https://badge.fury.io/js/%40pixi%2Fpixi-lights.svg)](https://badge.fury.io/js/%40pixi%2Fpixi-lights)
 
 A plugin that adds deferred lighting to PixiJS.
 
-**Note**: This modules *requires* v4.5.0+ of [pixi.js](https://github.com/pixijs/pixi.js) and v0.1.6 of [pixi-layers](https://github.com/pixijs/pixi-display).
+**Note**: This modules *requires* v6.0.4+ of [pixi.js](https://github.com/pixijs/pixi.js) and v1.0.0 of [@pixi/layers](https://github.com/pixijs/layers).
+
+For pixi-v4 see `v4.x` branch.
 
 * [Demo](https://pixijs.io/pixi-lights/demo/index.html)
 * [Documentation](https://pixijs.io/pixi-lights/docs/index.html)
@@ -21,9 +23,9 @@ import 'pixi-layers';
 import 'pixi-lights';
 
 // Get class references
-const {Application, Sprite, Container, lights, display} = PIXI;
-const {diffuseGroup, normalGroup, lightGroup} = lights;
-const {Layer, Stage} = display;
+import {Application, Sprite, Container, lights} from 'pixi.js';
+import {Layer, Stage} from '@pixi/layers';
+import {diffuseGroup, normalGroup, lightGroup, PointLight} from 'pixi-lights';
 
 // Create new application
 const app = new Application({
@@ -45,7 +47,7 @@ const normals = Sprite.fromImage('images/BGTextureNORM.jpg');
 normals.parentGroup = normalGroup;
 
 // Create the point light
-const light = new PIXI.lights.PointLight(0xffffff, 1);
+const light = new PointLight(0xffffff, 1);
 light.x = app.screen.width / 2;
 light.y = app.screen.height / 2;
 
@@ -72,7 +74,7 @@ app.stage.addChild(
 If you want to use light shaders inside a filter, make sure its full-screen:
 
 ```js
-app.stage.filters = [new PIXI.filters.BlurFilter()];
+app.stage.filters = [new BlurFilter()];
 app.stage.filterArea = app.screen;
 ```
 
