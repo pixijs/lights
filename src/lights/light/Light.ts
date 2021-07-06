@@ -86,14 +86,14 @@ export class Light extends Mesh
 
     get falloff(): ArrayLike<number>
     {
-        return this.material.uniforms.uLightOff;
+        return this.material.uniforms.uLightFalloff;
     }
 
     set falloff(value: ArrayLike<number>)
     {
-        this.material.uniforms.uLightOff[0] = value[0];
-        this.material.uniforms.uLightOff[1] = value[1];
-        this.material.uniforms.uLightOff[2] = value[2];
+        this.material.uniforms.uLightFalloff[0] = value[0];
+        this.material.uniforms.uLightFalloff[1] = value[1];
+        this.material.uniforms.uLightFalloff[2] = value[2];
     }
 
     /**

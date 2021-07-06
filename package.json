@@ -9,7 +9,7 @@
   "main": "./dist/pixi-lights.js",
   "module": "./lib/pixi-lights.es.js",
   "bundle": "./dist/pixi-lights.umd.js",
-  "namespace": "PIXI.smooth",
+  "namespace": "PIXI.lights",
   "types": "./index.d.ts",
   "homepage": "http://www.pixijs.com/",
   "bugs": "https://github.com/pixijs/pixi-lights/issues",
@@ -21,9 +21,9 @@
   "scripts": {
     "clean": "rimraf dist/* lib/* compile",
     "start": "run-s watch",
-    "watch": "rollup -cw scripts/rollup.config.js",
+    "watch": "rollup -cw",
     "prebuild": "run-s clean lint types",
-    "build": "rollup -c scripts/rollup.config.js",
+    "build": "rollup -c",
     "postbuild": "run-s build:types",
     "build:prod": "cross-env NODE_ENV=production run-s build",
     "prebuild:types": "rimraf compile",
@@ -95,9 +95,6 @@
     "npm-run-all": "^4.1.5",
     "rimraf": "^2.5.3",
     "rollup": "^2.50.5",
-    "rollup-plugin-sourcemaps": "^0.6.2",
-    "rollup-plugin-terser": "^7.0.0",
-    "@rollup/plugin-typescript": "^8.2.1",
     "tslib": "^2.0.1",
     "typescript": "^4.3.2"
   }

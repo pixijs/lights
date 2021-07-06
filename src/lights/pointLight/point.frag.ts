@@ -1,8 +1,4 @@
-import commonUniforms from '../shared/commonUniforms.glsl';
-import computeVertexPosition from '../shared/computeVertexPosition.glsl';
-import loadNormals from '../shared/loadNormals.glsl';
-import computeDiffuse from '../shared/computeDiffuse.glsl';
-import combine from '../shared/combine.glsl';
+import { combine, commonUniforms, computeDiffuse, computeVertexPosition, loadNormals } from '../shared';
 
 export default `precision highp float;
 

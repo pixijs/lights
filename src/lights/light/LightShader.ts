@@ -2,7 +2,7 @@ import { Texture } from '@pixi/core';
 import { Dict } from '@pixi/utils';
 import { IMeshMaterialOptions, MeshMaterial } from '@pixi/mesh';
 import { Matrix } from '@pixi/math';
-import vert from './light.vert';
+import { vert } from '../shared';
 
 /**
  * @class
@@ -33,7 +33,7 @@ export class LightShader extends MeshMaterial
             Object.assign(uniforms, options.uniforms);
         }
 
-        super(Texture.WHITE, options);
+        super(Texture.WHITE, { ...options, uniforms });
     }
 
     static defaultVertexSrc: string = vert;

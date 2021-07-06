@@ -22,7 +22,8 @@
     </head>
     <body>
         <script src="https://pixijs.download/dev/pixi.js"></script>
-        <script src="node_modules/@pixi-layers/dist/pixi-layers.umd.js"></script>
+<!--        <script src="../node_modules/@pixi/layers/dist/pixi-layers.umd.js"></script>-->
+        <script src="pixi-layers.umd.js"></script>
         <script src="../dist/pixi-lights.umd.js"></script>
         <script>
 
@@ -37,7 +38,9 @@
             stage.addChild(new PIXI.display.Layer(PIXI.lights.normalGroup));
             stage.addChild(new PIXI.display.Layer(PIXI.lights.lightGroup));
 
-            PIXI.loader
+            var loader = new PIXI.Loader();
+
+            loader
                 .add('bg_diffuse', 'images/BGTextureTest.jpg')
                 .add('bg_normal', 'images/BGTextureNORM.jpg')
                 .add('block_diffuse', 'images/block.png')
@@ -77,12 +80,12 @@
 
                 bg.interactive = true;
                 bg.on('pointermove', function (event) {
-                    light.position.copy(event.data.global);
+                    light.position.copyFrom(event.data.global);
                 });
 
                 bg.on('pointerdown', function (event) {
                     var clickLight = new PIXI.lights.PointLight(0xffffff);
-                    clickLight.position.copy(event.data.global);
+                    clickLight.position.copyFrom(event.data.global);
                     stage.addChild(clickLight);
                 });
             }

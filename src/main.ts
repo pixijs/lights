@@ -1,14 +1,11 @@
 import { Texture } from '@pixi/core';
 import { Group, Layer } from '@pixi/layers';
-import { Dict } from '@pixi/utils';
 
-const plugins: Dict<any> = {};
+export const diffuseGroup = new Group(0, false);
 
-const diffuseGroup = new Group(0, false);
+export const normalGroup = new Group(0, false);
 
-const normalGroup = new Group(0, false);
-
-const lightGroup = new Group(0, false);
+export const lightGroup = new Group(0, false);
 
 diffuseGroup.useRenderTexture = true;
 normalGroup.useRenderTexture = true;
@@ -58,10 +55,3 @@ export class LayerFinder
 
     static _instance = new LayerFinder();
 }
-
-export {
-    plugins,
-    diffuseGroup,
-    normalGroup,
-    lightGroup
-};
