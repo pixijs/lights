@@ -17,7 +17,7 @@ export class Light extends Mesh
     /** Brightness */
     brightness: number;
     /** Shader name */
-    shaderName: string;
+    shaderName: string | null = null;
     /** Use Viewport Quad */
     readonly useViewportQuad: boolean;
 
@@ -31,22 +31,11 @@ export class Light extends Mesh
     constructor(color = 0x4d4d59, brightness = 0.8, material: LightShader,
         vertices? : Float32Array, indices?: Uint16Array)
     {
-        let geom: Geometry;
-        let useViewportQuad = false;
-
-        if (!vertices)
-        {
-            geom = ViewportQuad._instance;
-            useViewportQuad = true;
-        }
-        else
-        {
-            geom = new Geometry().addAttribute('aVertexPosition', vertices).addIndex(indices);
-        }
-
-        super(geom, material);
+        super(!vertices ? ViewportQuad._instance : new Geometry()
+            .addAttribute('aVertexPosition', vertices).addIndex(indices), material);
 
         this.blendMode = BLEND_MODES.ADD;
+        const useViewportQuad = !vertices;
 
         this.drawMode = useViewportQuad ? DRAW_MODES.TRIANGLE_STRIP : DRAW_MODES.TRIANGLES;
 
@@ -72,14 +61,8 @@ export class Light extends Mesh
          */
         this.useViewportQuad = useViewportQuad;
 
-        // compatibility with old version and its ols bugs :)
-        if (color === null)
-        {
-            color = 0x4d4d59;
-        }
-
         // color and brightness are exposed through setters
-        this.tint = color;
+        this.tint = color ?? 0x4d4d59;
         this.brightness = brightness;
         this.parentGroup = lightGroup;
     }
@@ -116,7 +99,7 @@ export class Light extends Mesh
      * Last layer
      * @type {PIXI.layers.Layer}
      */
-    lastLayer: Layer;
+    lastLayer: Layer | null = null;
 
     /**
      * Sync Shader

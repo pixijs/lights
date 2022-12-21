@@ -34,17 +34,17 @@ export class LayerFinder
      * Last layer
      * @type {PIXI.layers.Layer}
      */
-    lastLayer: Layer = null;
+    lastLayer: Layer | null = null;
     /**
      * Diffuse texture
      * @type {PIXI.Texture}
      */
-    diffuseTexture: Texture = null;
+    diffuseTexture: Texture | null = null;
     /**
      * Normal texture
      * @type {PIXI.Texture}
      */
-    normalTexture: Texture = null;
+    normalTexture: Texture | null = null;
 
     /**
      * Check

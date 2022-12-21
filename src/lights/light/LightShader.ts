@@ -29,10 +29,7 @@ export class LightShader extends MeshMaterial
             uUseViewportQuad: true,
         };
 
-        if (options.uniforms)
-        {
-            Object.assign(uniforms, options.uniforms);
-        }
+        Object.assign(uniforms, options?.uniforms);
 
         super(Texture.WHITE, { ...options, uniforms });
     }
