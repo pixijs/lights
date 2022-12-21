@@ -1,7 +1,7 @@
 import { Geometry, Renderer, BLEND_MODES, DRAW_MODES } from '@pixi/core';
 import { Layer } from '@pixi/layers';
 import { Mesh } from '@pixi/mesh';
-import { LayerFinder, lightGroup } from '../../main';
+import { LayerFinder, lightGroup } from '../../LayerFinder';
 import { LightShader } from './LightShader';
 import { ViewportQuad } from './ViewportQuad';
 
