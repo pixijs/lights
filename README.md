@@ -1,19 +1,17 @@
 # PixiJS Lights
 
-[![Build CI](https://github.com/pixijs/lights/actions/workflows/build.yml/badge.svg)](https://github.com/pixijs/lights/actions/workflows/build.yml) [![npm version](https://badge.fury.io/js/%40pixi%2Fpixi-lights.svg)](https://badge.fury.io/js/%40pixi%2Fpixi-lights)
+[![Build CI](https://github.com/pixijs/lights/actions/workflows/build.yml/badge.svg)](https://github.com/pixijs/lights/actions/workflows/build.yml) [![npm version](https://badge.fury.io/js/@pixi%2Flights.svg)](https://badge.fury.io/js/@pixi%2Flights)
 
 A plugin that adds deferred lighting to PixiJS.
 
-**Note**: This modules *requires* v6.0.4+ of [pixi.js](https://github.com/pixijs/pixi.js) and v1.0.0 of [@pixi/layers](https://github.com/pixijs/layers).
+**Note**: This modules *requires* v7.0.0+ of [PixiJS](https://github.com/pixijs/pixijs) and v2.0.1+ of [@pixi/layers](https://github.com/pixijs/layers).
 
-For pixi-v4 see `v4.x` branch.
-
-* [Demo](https://pixijs.io/examples/#/plugin-layers/normals.js)
+* [Demo](https://pixijs.io/lights/demo/index.html)
 
 ## Usage
 
 You have to create three layers: one for sprites, one for their normals and one for lights. Sprites and normals are rendered to temporary RenderTexture, and lights have those two textures as an input.
- 
+
 ```js
 // Get class references
 import {Application, Sprite, Container, lights} from 'pixi.js';
@@ -62,6 +60,8 @@ app.stage.addChild(
 );
 ```
 
+* [Run This](https://pixijs.io/lights/demo/usage.html)
+
 ### Filters
 
 If you want to use light shaders inside a filter, make sure its full-screen:
@@ -71,24 +71,20 @@ app.stage.filters = [new BlurFilter()];
 app.stage.filterArea = app.screen;
 ```
 
-## Vanilla JS, UMD build
+## Vanilla JS
 
-All pixiJS v6 plugins has special `umd` build suited for vanilla.
-Navigate `pixi-lights` npm package, take `dist/pixi-lights.umd.js` file.
+Navigate `pixi-lights` npm package, take `dist/pixi-lights.js` file.
 
 ```html
 <script src='lib/pixi.js'></script>
 <script src='lib/pixi-lights.umd.js'></script>
 ```
 
-all classes can be accessed through `PIXI.lights` package.
+all classes can be accessed through `PIXI.lights` global namespace.
 
 ## Building
 
 You normally don't need to build this module, you can just download a release from the releases page.
-
-However, if you are developing on the project or want a bleeding edge build then you
-will need to have [node][node] setup on your machine.
 
 Then you can install dependencies and build:
 
@@ -97,8 +93,6 @@ npm i && npm run build
 ```
 
 That will output the built distributables to `./lib` and `./dist`.
-
-[node]:       http://nodejs.org/
 
 ## Roadmap
 
