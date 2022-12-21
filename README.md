@@ -1,6 +1,6 @@
 # PixiJS Lights
 
-[![Build](https://github.com/pixijs/lights/workflows/Build/badge.svg)](https://github.com/pixijs/lights/actions?query=workflow%3A%22Build%22) [![npm version](https://badge.fury.io/js/%40pixi%2Fpixi-lights.svg)](https://badge.fury.io/js/%40pixi%2Fpixi-lights)
+[![Build CI](https://github.com/pixijs/lights/actions/workflows/build.yml/badge.svg)](https://github.com/pixijs/lights/actions/workflows/build.yml) [![npm version](https://badge.fury.io/js/%40pixi%2Fpixi-lights.svg)](https://badge.fury.io/js/%40pixi%2Fpixi-lights)
 
 A plugin that adds deferred lighting to PixiJS.
 
