@@ -1,8 +1,15 @@
-import { Quad } from '@pixi/core';
-import { Rectangle } from '@pixi/math';
+import { Rectangle, Quad } from '@pixi/core';
 
+/**
+ * @extends PIXI.Quad
+ * @memberof PIXI.lights
+ */
 export class ViewportQuad extends Quad
 {
+    /**
+     * Update
+     * @param {PIXI.Rectangle} viewport -
+     */
     update(viewport: Rectangle): void
     {
         const b = this.buffers[0].data as Float32Array;

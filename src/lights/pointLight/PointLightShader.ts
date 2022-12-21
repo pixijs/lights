@@ -1,7 +1,10 @@
 import { Program } from '@pixi/core';
 import { LightShader } from '../light/LightShader';
-import fragment from './point.frag';
+import { pointFrag } from './point.frag';
 
+/**
+ * @memberof PIXI.lights
+ */
 export class PointLightShader extends LightShader
 {
     constructor()
@@ -14,5 +17,5 @@ export class PointLightShader extends LightShader
         });
     }
 
-    static _program= new Program(LightShader.defaultVertexSrc, fragment);
+    static _program = new Program(LightShader.defaultVertexSrc, pointFrag);
 }

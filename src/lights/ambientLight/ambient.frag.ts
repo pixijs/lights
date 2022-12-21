@@ -1,6 +1,6 @@
 import { commonUniforms, computeVertexPosition, loadNormals } from '../shared';
 
-export default `precision highp float;
+export const ambientFrag = `precision highp float;
 
 ${commonUniforms}
 

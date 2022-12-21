@@ -1,22 +1,21 @@
 import { Light } from '../light/Light';
-import { Point } from '@pixi/math';
+import { Point, Renderer } from '@pixi/core';
 import { DisplayObject } from '@pixi/display';
 import { DirectionalLightShader } from './DirectionalLightShader';
-import { Renderer } from '@pixi/core';
 
 /**
- * @class
- * @extends PIXI.lights.Light
+ * Directional light is drawn using a full-screen quad.
  * @memberof PIXI.lights
- *
- * @param [color=0xFFFFFF] {number} The color of the light.
- * @param [brightness=1] {number} The intensity of the light.
- * @param [target] {PIXI.DisplayObject|PIXI.Point} The object in the scene to target.
  */
 export class DirectionalLight extends Light
 {
     target: DisplayObject | Point;
 
+    /**
+     * @param {number} [color=0xFFFFFF] - The color of the light.
+     * @param {number} [brightness=1] - The intensity of the light.
+     * @param {PIXI.DisplayObject|PIXI.Point} [target] - The object in the scene to target.
+     */
     constructor(color = 0xFFFFFF, brightness = 1, target: DisplayObject | Point)
     {
         super(color, brightness, new DirectionalLightShader());
@@ -24,7 +23,11 @@ export class DirectionalLight extends Light
         this.target = target;
     }
 
-    syncShader(renderer: Renderer): void
+    /**
+     * Sync shader
+     * @param {PIXI.Renderer} renderer - Renderer
+     */
+    override syncShader(renderer: Renderer): void
     {
         super.syncShader(renderer);
 

@@ -32,3 +32,5 @@ compile
 dist
 lib
 index.d.ts
+example.api.json
+example.api.json.md5

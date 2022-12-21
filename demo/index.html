@@ -22,46 +22,45 @@
     </head>
     <body>
         <script src="https://pixijs.download/dev/pixi.js"></script>
-        <script src="../node_modules/@pixi/layers/dist/pixi-layers.umd.js"></script>
-        <script src="../dist/pixi-lights.umd.js"></script>
+        <script src="../node_modules/@pixi/layers/dist/pixi-layers.js"></script>
+        <script src="../dist/pixi-lights.js"></script>
         <script>
 
-            var app = new PIXI.Application({ width: 1024, height: 512 });
+            const app = new PIXI.Application({ width: 1024, height: 512 });
             document.body.appendChild(app.view);
 
-            var stage = app.stage = new PIXI.display.Stage();
-            var light = new PIXI.lights.PointLight(0xffffff, 1);
+            const stage = app.stage = new PIXI.layers.Stage();
+            const light = new PIXI.lights.PointLight(0xffffff, 1);
 
             // put all layers for deferred rendering of normals
-            stage.addChild(new PIXI.display.Layer(PIXI.lights.diffuseGroup));
-            stage.addChild(new PIXI.display.Layer(PIXI.lights.normalGroup));
-            stage.addChild(new PIXI.display.Layer(PIXI.lights.lightGroup));
+            stage.addChild(new PIXI.layers.Layer(PIXI.lights.diffuseGroup));
+            stage.addChild(new PIXI.layers.Layer(PIXI.lights.normalGroup));
+            stage.addChild(new PIXI.layers.Layer(PIXI.lights.lightGroup));
 
-            var loader = new PIXI.Loader();
-
-            loader
-                .add('bg_diffuse', 'images/BGTextureTest.jpg')
-                .add('bg_normal', 'images/BGTextureNORM.jpg')
-                .add('block_diffuse', 'images/block.png')
-                .add('block_normal', 'images/blockNormalMap.png')
-                .load(onAssetsLoaded);
+            PIXI.Assets.addBundle('textures', {
+                bg_diffuse: 'images/BGTextureTest.jpg',
+                bg_normal: 'images/BGTextureNORM.jpg',
+                block_diffuse: 'images/block.png',
+                block_normal: 'images/blockNormalMap.png',
+            });
 
             function createPair(diffuseTex, normalTex) {
-                var container = new PIXI.Container();
-                var diffuseSprite = new PIXI.Sprite(diffuseTex);
+                const container = new PIXI.Container();
+                const diffuseSprite = new PIXI.Sprite(diffuseTex);
                 diffuseSprite.parentGroup = PIXI.lights.diffuseGroup;
-                var normalSprite = new PIXI.Sprite(normalTex);
+                const normalSprite = new PIXI.Sprite(normalTex);
                 normalSprite.parentGroup = PIXI.lights.normalGroup;
                 container.addChild(diffuseSprite);
                 container.addChild(normalSprite);
                 return container;
             }
 
-            function onAssetsLoaded(loader, res) {
-                var bg = createPair(res.bg_diffuse.texture, res.bg_normal.texture);
-                var block = createPair(res.block_diffuse.texture, res.block_normal.texture);
-                var block1 = createPair(res.block_diffuse.texture, res.block_normal.texture);
-                var block2 = createPair(res.block_diffuse.texture, res.block_normal.texture);
+            PIXI.Assets.loadBundle('textures').then((res) => {
+
+                const bg = createPair(res.bg_diffuse, res.bg_normal);
+                const block = createPair(res.block_diffuse, res.block_normal);
+                const block1 = createPair(res.block_diffuse, res.block_normal);
+                const block2 = createPair(res.block_diffuse, res.block_normal);
 
                 block.position.set(100, 100);
                 block1.position.set(500, 100);
@@ -83,11 +82,11 @@
                 });
 
                 bg.on('pointerdown', function (event) {
-                    var clickLight = new PIXI.lights.PointLight(0xffffff);
+                    const clickLight = new PIXI.lights.PointLight(0xffffff);
                     clickLight.position.copyFrom(event.data.global);
                     stage.addChild(clickLight);
                 });
-            }
+            });
 
         </script>
     </body>

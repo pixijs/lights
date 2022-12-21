@@ -1,21 +1,55 @@
 import { Texture } from '@pixi/core';
 import { Group, Layer } from '@pixi/layers';
 
+/**
+ * @memberof PIXI.lights
+ * @static
+ * @type {PIXI.layers.Group}
+ */
 export const diffuseGroup = new Group(0, false);
 
+/**
+ * @memberof PIXI.lights
+ * @static
+ * @type {PIXI.layers.Group}
+ */
 export const normalGroup = new Group(0, false);
 
+/**
+ * @memberof PIXI.lights
+ * @static
+ * @type {PIXI.layers.Group}
+ */
 export const lightGroup = new Group(0, false);
 
 diffuseGroup.useRenderTexture = true;
 normalGroup.useRenderTexture = true;
 
+/**
+ * @memberof PIXI.lights
+ */
 export class LayerFinder
 {
-    lastLayer: Layer = null;
-    diffuseTexture: Texture = null;
-    normalTexture: Texture = null;
+    /**
+     * Last layer
+     * @type {PIXI.layers.Layer}
+     */
+    lastLayer: Layer | null = null;
+    /**
+     * Diffuse texture
+     * @type {PIXI.Texture}
+     */
+    diffuseTexture: Texture | null = null;
+    /**
+     * Normal texture
+     * @type {PIXI.Texture}
+     */
+    normalTexture: Texture | null = null;
 
+    /**
+     * Check
+     * @param {PIXI.layers.Layer} layer -
+     */
     check(layer: Layer): void
     {
         if (this.lastLayer === layer)

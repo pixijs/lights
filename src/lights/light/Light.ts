@@ -1,52 +1,47 @@
-import { BLEND_MODES, DRAW_MODES } from '@pixi/constants';
-import { Geometry, Renderer } from '@pixi/core';
+import { Geometry, Renderer, BLEND_MODES, DRAW_MODES } from '@pixi/core';
 import { Layer } from '@pixi/layers';
 import { Mesh } from '@pixi/mesh';
-import { LayerFinder, lightGroup } from '../../main';
+import { LayerFinder, lightGroup } from '../../LayerFinder';
 import { LightShader } from './LightShader';
 import { ViewportQuad } from './ViewportQuad';
 
 /**
- * @class
- * @extends PIXI.DisplayObject
+ * Base light class.
+ * @extends PIXI.Mesh
  * @memberof PIXI.lights
- *
- * @param [color=0xFFFFFF] {number} The color of the light.
- * @param [brightness=1] {number} The brightness of the light, in range [0, 1].
  */
 export class Light extends Mesh
 {
+    /** Light height */
     lightHeight: number;
+    /** Brightness */
     brightness: number;
-    shaderName: string;
+    /** Shader name */
+    shaderName: string | null = null;
+    /** Use Viewport Quad */
     readonly useViewportQuad: boolean;
 
+    /**
+     * @param {number} [color=0xFFFFFF] - The color of the light.
+     * @param {number} [brightness=1] - The brightness of the light, in range [0, 1].
+     * @param {PIXI.lights.LightShader} [material] -
+     * @param {Float32Array} [vertices] -
+     * @param {Uint16Array} [indices] -
+     */
     constructor(color = 0x4d4d59, brightness = 0.8, material: LightShader,
         vertices? : Float32Array, indices?: Uint16Array)
     {
-        let geom: Geometry;
-        let useViewportQuad = false;
-
-        if (!vertices)
-        {
-            geom = ViewportQuad._instance;
-            useViewportQuad = true;
-        }
-        else
-        {
-            geom = new Geometry().addAttribute('aVertexPosition', vertices).addIndex(indices);
-        }
-
-        super(geom, material);
+        super(!vertices ? ViewportQuad._instance : new Geometry()
+            .addAttribute('aVertexPosition', vertices).addIndex(indices), material);
 
         this.blendMode = BLEND_MODES.ADD;
+        const useViewportQuad = !vertices;
 
         this.drawMode = useViewportQuad ? DRAW_MODES.TRIANGLE_STRIP : DRAW_MODES.TRIANGLES;
 
         /**
          * The height of the light from the viewport.
          *
-         * @member {number}
          * @default 0.075
          */
         this.lightHeight = 0.075;
@@ -61,26 +56,19 @@ export class Light extends Mesh
 
         /**
          * By default the light uses a viewport sized quad as the mesh.
+         *
+         * @member {boolean}
          */
         this.useViewportQuad = useViewportQuad;
 
-        // compatibility with old version and its ols bugs :)
-        if (color === null)
-        {
-            color = 0x4d4d59;
-        }
-
         // color and brightness are exposed through setters
-        this.tint = color;
+        this.tint = color ?? 0x4d4d59;
         this.brightness = brightness;
         this.parentGroup = lightGroup;
     }
 
     /**
      * The color of the lighting.
-     *
-     * @member {number}
-     * @memberof Light#
      */
     get color(): number
     {
@@ -91,6 +79,10 @@ export class Light extends Mesh
         this.tint = val;
     }
 
+    /**
+     * Falloff
+     * @member {number[]}
+     */
     get falloff(): ArrayLike<number>
     {
         return this.material.uniforms.uLightFalloff;
@@ -103,8 +95,16 @@ export class Light extends Mesh
         this.material.uniforms.uLightFalloff[2] = value[2];
     }
 
-    lastLayer: Layer;
+    /**
+     * Last layer
+     * @type {PIXI.layers.Layer}
+     */
+    lastLayer: Layer | null = null;
 
+    /**
+     * Sync Shader
+     * @param {PIXI.Renderer} renderer - Renderer
+     */
     syncShader(renderer: Renderer): void
     {
         const { uniforms } = this.shader;
