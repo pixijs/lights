@@ -3,13 +3,14 @@ import { IMeshMaterialOptions, MeshMaterial } from '@pixi/mesh';
 import { vert } from '../shared';
 
 /**
- * @class
- * @extends PIXI.Shader
+ * @extends PIXI.MeshMaterial
  * @memberof PIXI.lights
- * @param shaderManager {ShaderManager} The WebGL shader manager this shader works for.
  */
 export class LightShader extends MeshMaterial
 {
+    /**
+     * @param {PIXI.lights.IMeshMaterialOptions} [options] - Options to use.
+     */
     constructor(options?: IMeshMaterialOptions)
     {
         const uniforms: utils.Dict<any> = {

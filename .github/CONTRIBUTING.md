@@ -21,7 +21,7 @@ runnable, code example that reproduces the problem you have.
 **4. Share as much information as possible.** Include browser/node version affected, your OS, version of the library,
 steps to reproduce, etc. "X isn't working!!!1!" will probably just be closed.
 
-[10]: https://github.com/pixijs/pixi-lights/issues
+[10]: https://github.com/pixijs/lights/issues
 [11]: http://jsfiddle.net
 [12]: http://jsbin.com/
 

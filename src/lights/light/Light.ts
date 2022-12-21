@@ -6,20 +6,28 @@ import { LightShader } from './LightShader';
 import { ViewportQuad } from './ViewportQuad';
 
 /**
- * @class
- * @extends PIXI.DisplayObject
+ * Base light class.
+ * @extends PIXI.Mesh
  * @memberof PIXI.lights
- *
- * @param [color=0xFFFFFF] {number} The color of the light.
- * @param [brightness=1] {number} The brightness of the light, in range [0, 1].
  */
 export class Light extends Mesh
 {
+    /** Light height */
     lightHeight: number;
+    /** Brightness */
     brightness: number;
+    /** Shader name */
     shaderName: string;
+    /** Use Viewport Quad */
     readonly useViewportQuad: boolean;
 
+    /**
+     * @param {number} [color=0xFFFFFF] - The color of the light.
+     * @param {number} [brightness=1] - The brightness of the light, in range [0, 1].
+     * @param {PIXI.lights.LightShader} [material] -
+     * @param {Float32Array} [vertices] -
+     * @param {Uint16Array} [indices] -
+     */
     constructor(color = 0x4d4d59, brightness = 0.8, material: LightShader,
         vertices? : Float32Array, indices?: Uint16Array)
     {
@@ -45,7 +53,6 @@ export class Light extends Mesh
         /**
          * The height of the light from the viewport.
          *
-         * @member {number}
          * @default 0.075
          */
         this.lightHeight = 0.075;
@@ -60,6 +67,8 @@ export class Light extends Mesh
 
         /**
          * By default the light uses a viewport sized quad as the mesh.
+         *
+         * @member {boolean}
          */
         this.useViewportQuad = useViewportQuad;
 
@@ -77,9 +86,6 @@ export class Light extends Mesh
 
     /**
      * The color of the lighting.
-     *
-     * @member {number}
-     * @memberof Light#
      */
     get color(): number
     {
@@ -90,6 +96,10 @@ export class Light extends Mesh
         this.tint = val;
     }
 
+    /**
+     * Falloff
+     * @member {number[]}
+     */
     get falloff(): ArrayLike<number>
     {
         return this.material.uniforms.uLightFalloff;
@@ -102,8 +112,16 @@ export class Light extends Mesh
         this.material.uniforms.uLightFalloff[2] = value[2];
     }
 
+    /**
+     * Last layer
+     * @type {PIXI.layers.Layer}
+     */
     lastLayer: Layer;
 
+    /**
+     * Sync Shader
+     * @param {PIXI.Renderer} renderer - Renderer
+     */
     syncShader(renderer: Renderer): void
     {
         const { uniforms } = this.shader;

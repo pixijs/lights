@@ -1,6 +1,6 @@
 # PixiJS Lights
 
-[![Build](https://github.com/pixijs/pixi-lights/workflows/Build/badge.svg)](https://github.com/pixijs/pixi-lights/actions?query=workflow%3A%22Build%22) [![npm version](https://badge.fury.io/js/%40pixi%2Fpixi-lights.svg)](https://badge.fury.io/js/%40pixi%2Fpixi-lights)
+[![Build](https://github.com/pixijs/lights/workflows/Build/badge.svg)](https://github.com/pixijs/lights/actions?query=workflow%3A%22Build%22) [![npm version](https://badge.fury.io/js/%40pixi%2Fpixi-lights.svg)](https://badge.fury.io/js/%40pixi%2Fpixi-lights)
 
 A plugin that adds deferred lighting to PixiJS.
 
@@ -18,7 +18,7 @@ You have to create three layers: one for sprites, one for their normals and one 
 // Get class references
 import {Application, Sprite, Container, lights} from 'pixi.js';
 import {Layer, Stage} from '@pixi/layers';
-import {diffuseGroup, normalGroup, lightGroup, PointLight} from 'pixi-lights';
+import {diffuseGroup, normalGroup, lightGroup, PointLight} from '@pixi/lights';
 
 // Create new application
 const app = new Application({

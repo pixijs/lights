@@ -4,18 +4,17 @@ import { getCircleMesh } from '../../mixins/Circle';
 import { PointLightShader } from './PointLightShader';
 
 /**
- * @class
- * @extends PIXI.lights.Light
  * @memberof PIXI.lights
- *
- * @param [color=0xFFFFFF] {number} The color of the light.
- * @param [brightness=1] {number} The intensity of the light.
- * @param [radius=Infinity] {number} The distance the light reaches. You will likely need
- *  to change the falloff of the light as well if you change this value. Infinity will
- *  use the entire viewport as the drawing surface.
  */
 export class PointLight extends Light
 {
+    /**
+     * @param {number} [color=0xFFFFFF] - The color of the light.
+     * @param {number} [brightness=1] - The intensity of the light.
+     * @param {number} [radius=Infinity] - The distance the light reaches. You will likely need
+     *  to change the falloff of the light as well if you change this value. Infinity will
+     *  use the entire viewport as the drawing surface.
+     */
     constructor(color = 0xFFFFFF, brightness = 1, radius = Infinity)
     {
         if (radius !== Infinity)
@@ -35,6 +34,7 @@ export class PointLight extends Light
         this.radius = radius;
     }
 
+    /** Radius */
     get radius(): number
     {
         return this.material.uniforms.uLightRadius;

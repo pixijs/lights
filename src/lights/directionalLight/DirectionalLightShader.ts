@@ -3,8 +3,6 @@ import { LightShader } from '../light/LightShader';
 import { directionalFrag } from './directional.frag';
 
 /**
- * @class
- * @extends PIXI.Shader
  * @memberof PIXI.lights
  */
 export class DirectionalLightShader extends LightShader

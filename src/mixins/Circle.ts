@@ -1,15 +1,30 @@
 import { Circle } from '@pixi/core';
 
 /**
+ * PixiJS namespace.
+ * @namespace PIXI
+ */
+
+/**
+ * PixiJS Lights namespace.
+ * @namespace PIXI.lights
+ */
+
+/**
+ * Circle class from PixiJS.
+ * @class PIXI.Circle
+ */
+
+/**
  * Creates vertices and indices arrays to describe this circle.
  * @method PIXI.Circle#getMesh
- * @param shape
- * @param [totalSegments=40] {number} Total segments to build for the circle mesh.
- * @param vertices
- * @param indices
+ * @param {PIXI.Circle} shape -
+ * @param {number} [totalSegments=40] - Total segments to build for the circle mesh.
+ * @param vertices -
+ * @param indices -
  *  `((totalSegments + 2) * 2)` or more. If not passed it is created for you.
  *  be `(totalSegments + 3)` or more. If not passed it is created for you.
- * @return {PIXI.Circle~MeshData} Object with verticies and indices arrays
+ * @return {PIXI.lights.CircleMeshData} Object with verticies and indices arrays
  */
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function getCircleMesh(shape: Circle, totalSegments = 40, vertices?: Float32Array, indices?: Uint16Array)
@@ -39,7 +54,12 @@ export function getCircleMesh(shape: Circle, totalSegments = 40, vertices?: Floa
 }
 
 /**
- * @typedef PIXI.Circle~MeshData
+ * @memberof PIXI.lights
  * @property {Float32Array} vertices - Vertices data
  * @property {Uint16Array} indices - Indices data
  */
+export interface CircleMeshData
+{
+    vertices: Float32Array;
+    indices: Uint16Array;
+}
