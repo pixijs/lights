@@ -1,4 +1,4 @@
-import { Circle } from '@pixi/math';
+import { Circle } from '@pixi/core';
 
 /**
  * Creates vertices and indices arrays to describe this circle.

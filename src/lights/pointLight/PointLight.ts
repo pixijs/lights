@@ -1,6 +1,5 @@
 import { Light } from '../light/Light';
-import { DRAW_MODES } from '@pixi/constants';
-import { Circle } from '@pixi/math';
+import { Circle, DRAW_MODES } from '@pixi/core';
 import { getCircleMesh } from '../../mixins/Circle';
 import { PointLightShader } from './PointLightShader';
 

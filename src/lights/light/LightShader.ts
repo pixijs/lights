@@ -1,7 +1,5 @@
-import { Texture } from '@pixi/core';
-import { Dict } from '@pixi/utils';
+import { Texture, utils, Matrix } from '@pixi/core';
 import { IMeshMaterialOptions, MeshMaterial } from '@pixi/mesh';
-import { Matrix } from '@pixi/math';
 import { vert } from '../shared';
 
 /**
@@ -14,7 +12,7 @@ export class LightShader extends MeshMaterial
 {
     constructor(options?: IMeshMaterialOptions)
     {
-        const uniforms: Dict<any> = {
+        const uniforms: utils.Dict<any> = {
             translationMatrix: Matrix.IDENTITY.toArray(true),
             // textures from the previously rendered FBOs
             uNormalSampler: Texture.WHITE,

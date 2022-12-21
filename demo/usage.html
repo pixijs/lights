@@ -22,12 +22,12 @@
     </head>
     <body>
         <script src="https://pixijs.download/dev/pixi.js"></script>
-        <script src="../node_modules/@pixi/layers/dist/pixi-layers.umd.js"></script>
-        <script src="../dist/pixi-lights.umd.js"></script>
+        <script src="../node_modules/@pixi/layers/dist/pixi-layers.js"></script>
+        <script src="../dist/pixi-lights.js"></script>
         <script>
-            const {Application, Sprite, Container, lights, display} = PIXI;
+            const {Application, Sprite, Container, lights, layers} = PIXI;
             const {diffuseGroup, normalGroup, lightGroup} = lights;
-            const {Layer, Stage} = display;
+            const {Layer, Stage} = layers;
 
             const app = new Application({
                 backgroundColor: 0x000000, // Black is required!

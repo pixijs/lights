@@ -1,5 +1,4 @@
-import { Quad } from '@pixi/core';
-import { Rectangle } from '@pixi/math';
+import { Rectangle, Quad } from '@pixi/core';
 
 export class ViewportQuad extends Quad
 {

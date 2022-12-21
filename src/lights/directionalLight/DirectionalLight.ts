@@ -1,8 +1,7 @@
 import { Light } from '../light/Light';
-import { Point } from '@pixi/math';
+import { Point, Renderer } from '@pixi/core';
 import { DisplayObject } from '@pixi/display';
 import { DirectionalLightShader } from './DirectionalLightShader';
-import { Renderer } from '@pixi/core';
 
 /**
  * @class

@@ -1,16 +1,24 @@
 {
-  "name": "pixi-lights",
+  "name": "@pixi/lights",
   "version": "3.0.0",
   "description": "A plugin that adds deferred lighting to PixiJS v6",
   "author": "Ivan Popelyshev",
   "contributors": [
     "Ivan Popelyshev <ivan.popelyshev@gmail.com>"
   ],
-  "main": "./dist/pixi-lights.js",
-  "module": "./lib/pixi-lights.es.js",
-  "bundle": "./dist/pixi-lights.umd.js",
   "namespace": "PIXI.lights",
-  "types": "./index.d.ts",
+  "source": "./src/index.ts",
+  "main": "./lib/index.js",
+  "module": "./lib/index.mjs",
+  "types": "./lib/index.d.ts",
+  "bundle": "./dist/pixi-lights.js",
+  "exports": {
+    ".": {
+      "import": "./lib/index.mjs",
+      "require": "./lib/index.js",
+      "types": "./lib/index.d.ts"
+    }
+  },
   "homepage": "http://www.pixijs.com/",
   "bugs": "https://github.com/pixijs/pixi-lights/issues",
   "license": "MIT",
@@ -19,21 +27,22 @@
     "url": "https://github.com/pixijs/pixi-lights.git"
   },
   "scripts": {
-    "clean": "rimraf dist/* lib/* compile",
-    "start": "run-s watch",
+    "clean": "rimraf dist/* lib/*",
+    "start": "run-p watch demo",
     "watch": "rollup -cw",
     "prebuild": "run-s clean lint types",
     "build": "rollup -c",
     "postbuild": "run-s build:types",
-    "build:prod": "cross-env NODE_ENV=production run-s build",
-    "prebuild:types": "rimraf compile",
-    "build:types": "tsc --outDir compile && api-extractor run",
-    "lint": "eslint ./src",
+    "prebuild:types": "rimraf lib/**.d.ts",
+    "build:types": "tsc --outDir lib --declaration --emitDeclarationOnly",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
     "types": "tsc -noEmit",
+    "demo": "http-server . -o demo -s",
     "release:patch": "npm version patch && npm publish",
     "release:minor": "npm version minor && npm publish",
     "release:major": "npm version major && npm publish",
-    "postversion": "run-s build:prod",
+    "postversion": "run-s build",
     "postpublish": "git push && git push --tags",
     "prepack": "clean-package",
     "postpack": "clean-package restore"
@@ -42,8 +51,8 @@
     "access": "public"
   },
   "engines": {
-    "node": ">=14",
-    "npm": ">=7"
+    "node": ">=16",
+    "npm": ">=8"
   },
   "clean-package": {
     "indent": 2,
@@ -62,39 +71,28 @@
   },
   "files": [
     "dist/",
-    "lib/",
-    "index.d.ts",
-    "LICENSE",
-    "package.json",
-    "README.md"
+    "lib/"
   ],
   "peerDependencies": {
-    "@pixi/constants": "^6.0.4",
-    "@pixi/core": "^6.0.4",
-    "@pixi/display": "^6.0.4",
-    "@pixi/math": "^6.0.4",
-    "@pixi/mesh": "^6.0.4",
-    "@pixi/utils": "^6.0.4"
+    "@pixi/core": "^7.0.0",
+    "@pixi/display": "^7.0.0",
+    "@pixi/layers": "^2.0.1",
+    "@pixi/mesh": "^7.0.0"
   },
   "devDependencies": {
-    "@microsoft/api-extractor": "7.17.1",
-    "@pixi-build-tools/rollup-configurator": "~1.0.11",
-    "@pixi/constants": "^6.0.4",
-    "@pixi/core": "^6.0.4",
-    "@pixi/display": "^6.0.4",
-    "@pixi/eslint-config": "^2.0.1",
-    "@pixi/math": "^6.0.4",
-    "@pixi/mesh": "^6.0.4",
-    "@pixi/utils": "^6.0.4",
-    "@pixi/layers": "^1.0.5",
-    "@typescript-eslint/eslint-plugin": "^4.16.1",
-    "@typescript-eslint/parser": "^4.16.1",
+    "@pixi/core": "^7.0.0",
+    "@pixi/display": "^7.0.0",
+    "@pixi/eslint-config": "^4.0.1",
+    "@pixi/layers": "^2.0.1",
+    "@pixi/mesh": "^7.0.0",
     "clean-package": "^1.0.1",
     "cross-env": "^7.0.3",
     "eslint": "^7.21.0",
+    "http-server": "^14.1.1",
     "npm-run-all": "^4.1.5",
     "rimraf": "^2.5.3",
     "rollup": "^2.50.5",
+    "rollup-plugin-esbuild": "^5.0.0",
     "tslib": "^2.0.1",
     "typescript": "^4.3.2"
   }

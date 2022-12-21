@@ -1,6 +1,6 @@
 import { combine, commonUniforms, computeDiffuse, computeVertexPosition, loadNormals } from '../shared';
 
-export default `precision highp float;
+export const directionalFrag = `precision highp float;
 
 // imports the common uniforms like samplers, and ambient/light color
 ${commonUniforms}
