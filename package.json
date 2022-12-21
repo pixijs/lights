@@ -77,7 +77,7 @@
     "@pixi/utils": "^6.0.4"
   },
   "devDependencies": {
-    "@microsoft/api-extractor": "7.17.1",
+    "@microsoft/api-extractor": "7.33.7",
     "@pixi-build-tools/rollup-configurator": "~1.0.11",
     "@pixi/constants": "^6.0.4",
     "@pixi/core": "^6.0.4",
