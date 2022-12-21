@@ -4,7 +4,8 @@
   "description": "A plugin that adds deferred lighting to PixiJS v6",
   "author": "Ivan Popelyshev",
   "contributors": [
-    "Ivan Popelyshev <ivan.popelyshev@gmail.com>"
+    "Ivan Popelyshev <ivan.popelyshev@gmail.com>",
+    "Matt Karl <matt@mattkarl.com>"
   ],
   "namespace": "PIXI.lights",
   "source": "./src/index.ts",
