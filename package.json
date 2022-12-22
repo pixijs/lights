@@ -21,11 +21,11 @@
     }
   },
   "homepage": "http://www.pixijs.com/",
-  "bugs": "https://github.com/pixijs/pixi-lights/issues",
+  "bugs": "https://github.com/pixijs/lights/issues",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/pixijs/pixi-lights.git"
+    "url": "https://github.com/pixijs/lights.git"
   },
   "scripts": {
     "clean": "rimraf dist/* lib/*",
