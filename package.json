@@ -1,6 +1,6 @@
 {
   "name": "@pixi/lights",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "A plugin that adds deferred lighting to PixiJS v6",
   "author": "Ivan Popelyshev",
   "contributors": [
