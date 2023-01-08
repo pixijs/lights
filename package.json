@@ -7,12 +7,21 @@
     "Ivan Popelyshev <ivan.popelyshev@gmail.com>",
     "Matt Karl <matt@mattkarl.com>"
   ],
-  "namespace": "PIXI.lights",
-  "source": "./src/index.ts",
+  "extensionConfig": {
+    "namespace": "PIXI.lights",
+    "lint": ["src"],
+    "globals": {
+      "@pixi/layers": "PIXI.layers"
+    },
+    "docsName": "PixiJS Lights",
+    "docsCopyright": "Copyright &copy; 2015 - 2022 Ivan Popelyshev",
+    "docsTitle": "PixiJS Lights API Documentation",
+    "docsDescription": "Documentation for PixiJS Lights library",
+    "docsKeyword": "docs, documentation, pixi, pixijs, rendering, pixi-lights, display, pixi-display, javascript"
+  },
   "main": "./lib/index.js",
   "module": "./lib/index.mjs",
   "types": "./lib/index.d.ts",
-  "bundle": "./dist/pixi-lights.js",
   "exports": {
     ".": {
       "import": "./lib/index.mjs",
@@ -28,27 +37,16 @@
     "url": "https://github.com/pixijs/lights.git"
   },
   "scripts": {
-    "clean": "rimraf dist/* lib/*",
-    "start": "run-p watch demo",
-    "watch": "rollup -cw",
-    "prebuild": "run-s clean lint types",
-    "build": "rollup -c",
-    "postbuild": "run-s build:types",
-    "prebuild:types": "rimraf lib/**.d.ts",
-    "build:types": "tsc --outDir lib --declaration --emitDeclarationOnly",
-    "lint": "eslint src",
-    "lint:fix": "eslint src --fix",
-    "types": "tsc -noEmit",
-    "demo": "http-server . -o demo -s",
-    "release:patch": "npm version patch && npm publish",
-    "release:minor": "npm version minor && npm publish",
-    "release:major": "npm version major && npm publish",
-    "postversion": "run-s build",
-    "postpublish": "run-s deploy && git push && git push --tags",
-    "predocs": "rimraf docs/**",
-    "docs": "webdoc -c webdoc.json -r README.md",
-    "predeploy": "run-s docs",
-    "deploy": "gh-pages -d . -s \"{dist,demo,docs}/**\" -f",
+    "clean": "xs clean",
+    "start": "xs serve",
+    "watch": "xs watch",
+    "build": "xs build",
+    "lint": "xs lint",
+    "lint:fix": "xs lint --fix",
+    "types": "xs types",
+    "release": "xs release",
+    "docs": "xs docs",
+    "deploy": "xs deploy",
     "prepack": "clean-package",
     "postpack": "clean-package restore"
   },
@@ -66,13 +64,7 @@
       "scripts",
       "engines",
       "devDependencies",
-      "eslintConfig",
-      "source"
-    ]
-  },
-  "eslintConfig": {
-    "extends": [
-      "@pixi/eslint-config"
+      "extensionConfig"
     ]
   },
   "files": [
@@ -88,21 +80,9 @@
   "devDependencies": {
     "@pixi/core": "^7.0.0",
     "@pixi/display": "^7.0.0",
-    "@pixi/eslint-config": "^4.0.1",
+    "@pixi/extension-scripts": "^1.2.2",
     "@pixi/layers": "^2.0.1",
     "@pixi/mesh": "^7.0.0",
-    "@pixi/webdoc-template": "^1.5.5",
-    "@webdoc/cli": "^2.2.0",
-    "clean-package": "^1.0.1",
-    "cross-env": "^7.0.3",
-    "eslint": "^7.21.0",
-    "gh-pages": "^4.0.0",
-    "http-server": "^14.1.1",
-    "npm-run-all": "^4.1.5",
-    "rimraf": "^2.5.3",
-    "rollup": "^2.50.5",
-    "rollup-plugin-esbuild": "^5.0.0",
-    "tslib": "^2.0.1",
-    "typescript": "^4.3.2"
+    "clean-package": "^1.0.1"
   }
 }
