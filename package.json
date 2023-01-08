@@ -48,7 +48,8 @@
     "docs": "xs docs",
     "deploy": "xs deploy",
     "prepack": "clean-package",
-    "postpack": "clean-package restore"
+    "postpack": "clean-package restore",
+    "test": "xs build,docs"
   },
   "publishConfig": {
     "access": "public"
