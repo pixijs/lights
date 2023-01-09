@@ -6,7 +6,7 @@ A plugin that adds deferred lighting to PixiJS.
 
 **Note**: This modules *requires* v7.0.0+ of [PixiJS](https://github.com/pixijs/pixijs) and v2.0.1+ of [@pixi/layers](https://github.com/pixijs/layers).
 
-* [Demo](https://pixijs.io/lights/demo/index.html)
+* [Demo](https://pixijs.io/lights/examples/index.html)
 
 ## Usage
 
@@ -60,7 +60,7 @@ app.stage.addChild(
 );
 ```
 
-* [Run This](https://pixijs.io/lights/demo/usage.html)
+* [Run This](https://pixijs.io/lights/examples/usage.html)
 
 ### Filters
 
