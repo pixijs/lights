@@ -47,8 +47,6 @@
     "release": "xs release",
     "docs": "xs docs",
     "deploy": "xs deploy",
-    "prepack": "clean-package",
-    "postpack": "clean-package restore",
     "test": "xs build,docs"
   },
   "publishConfig": {
@@ -57,16 +55,6 @@
   "engines": {
     "node": ">=16",
     "npm": ">=8"
-  },
-  "clean-package": {
-    "indent": 2,
-    "remove": [
-      "clean-package",
-      "scripts",
-      "engines",
-      "devDependencies",
-      "extensionConfig"
-    ]
   },
   "files": [
     "dist/",
@@ -81,9 +69,8 @@
   "devDependencies": {
     "@pixi/core": "^7.0.0",
     "@pixi/display": "^7.0.0",
-    "@pixi/extension-scripts": "^1.2.2",
+    "@pixi/extension-scripts": "^1.3.0",
     "@pixi/layers": "^2.0.1",
-    "@pixi/mesh": "^7.0.0",
-    "clean-package": "^1.0.1"
+    "@pixi/mesh": "^7.0.0"
   }
 }
