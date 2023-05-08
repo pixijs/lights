@@ -1,17 +1,16 @@
-import { Geometry, Renderer, BLEND_MODES, DRAW_MODES } from '@pixi/core';
-import { Layer } from '@pixi/layers';
-import { Mesh } from '@pixi/mesh';
-import { LayerFinder, lightGroup } from '../../LayerFinder';
-import { LightShader } from './LightShader';
-import { ViewportQuad } from './ViewportQuad';
+import { Geometry, Renderer, BLEND_MODES, DRAW_MODES } from "@pixi/core";
+import { Layer } from "@pixi/layers";
+import { Mesh } from "@pixi/mesh";
+import { LayerFinder, lightGroup } from "../../LayerFinder";
+import { LightShader } from "./LightShader";
+import { ViewportQuad } from "./ViewportQuad";
 
 /**
  * Base light class.
  * @extends PIXI.Mesh
  * @memberof PIXI.lights
  */
-export class Light extends Mesh
-{
+export class Light extends Mesh {
     /** Light height */
     lightHeight: number;
     /** Brightness */
@@ -28,16 +27,28 @@ export class Light extends Mesh
      * @param {Float32Array} [vertices] -
      * @param {Uint16Array} [indices] -
      */
-    constructor(color = 0x4d4d59, brightness = 0.8, material: LightShader,
-        vertices? : Float32Array, indices?: Uint16Array)
-    {
-        super(!vertices ? ViewportQuad._instance : new Geometry()
-            .addAttribute('aVertexPosition', vertices).addIndex(indices), material);
+    constructor(
+        color = 0x4d4d59,
+        brightness = 0.8,
+        material: LightShader,
+        vertices?: Float32Array,
+        indices?: Uint16Array
+    ) {
+        super(
+            !vertices
+                ? ViewportQuad._instance
+                : new Geometry()
+                      .addAttribute("aVertexPosition", vertices)
+                      .addIndex(indices),
+            material
+        );
 
         this.blendMode = BLEND_MODES.ADD;
         const useViewportQuad = !vertices;
 
-        this.drawMode = useViewportQuad ? DRAW_MODES.TRIANGLE_STRIP : DRAW_MODES.TRIANGLES;
+        this.drawMode = useViewportQuad
+            ? DRAW_MODES.TRIANGLE_STRIP
+            : DRAW_MODES.TRIANGLES;
 
         /**
          * The height of the light from the viewport.
@@ -70,12 +81,10 @@ export class Light extends Mesh
     /**
      * The color of the lighting.
      */
-    get color(): number
-    {
+    get color(): number {
         return this.tint;
     }
-    set color(val: number)
-    {
+    set color(val: number) {
         this.tint = val;
     }
 
@@ -83,13 +92,11 @@ export class Light extends Mesh
      * Falloff
      * @member {number[]}
      */
-    get falloff(): ArrayLike<number>
-    {
+    get falloff(): ArrayLike<number> {
         return this.material.uniforms.uLightFalloff;
     }
 
-    set falloff(value: ArrayLike<number>)
-    {
+    set falloff(value: ArrayLike<number>) {
         this.material.uniforms.uLightFalloff[0] = value[0];
         this.material.uniforms.uLightFalloff[1] = value[1];
         this.material.uniforms.uLightFalloff[2] = value[2];
@@ -105,8 +112,7 @@ export class Light extends Mesh
      * Sync Shader
      * @param {PIXI.Renderer} renderer - Renderer
      */
-    syncShader(renderer: Renderer): void
-    {
+    syncShader(renderer: Renderer): void {
         const { uniforms } = this.shader;
 
         // TODO: actually pass UV's of screen instead of size
@@ -119,12 +125,11 @@ export class Light extends Mesh
         uniforms.uNormalSampler = LayerFinder._instance.normalTexture;
         uniforms.uUseViewportQuad = this.useViewportQuad;
         uniforms.uBrightness = this.brightness;
+        uniforms.material.uniforms.uLightHeight = this.lightHeight;
     }
 
-    _renderDefault(renderer: Renderer): void
-    {
-        if (!this._activeParentLayer)
-        {
+    _renderDefault(renderer: Renderer): void {
+        if (!this._activeParentLayer) {
             return;
         }
         LayerFinder._instance.check(this._activeParentLayer);
@@ -132,16 +137,15 @@ export class Light extends Mesh
         const shader = this.shader as unknown as LightShader;
 
         shader.alpha = this.worldAlpha;
-        if (shader.update)
-        {
+        if (shader.update) {
             shader.update();
         }
 
         renderer.batch.flush();
 
-        shader.uniforms.translationMatrix = this.transform.worldTransform.toArray(true);
-        if (this.useViewportQuad)
-        {
+        shader.uniforms.translationMatrix =
+            this.transform.worldTransform.toArray(true);
+        if (this.useViewportQuad) {
             // TODO: pass the viewport (translated screen) instead
             (this.geometry as ViewportQuad).update(renderer.screen);
         }
@@ -154,6 +158,11 @@ export class Light extends Mesh
 
         renderer.geometry.bind(this.geometry, shader);
 
-        renderer.geometry.draw(this.drawMode, this.size, this.start, this.geometry.instanceCount);
+        renderer.geometry.draw(
+            this.drawMode,
+            this.size,
+            this.start,
+            this.geometry.instanceCount
+        );
     }
 }
